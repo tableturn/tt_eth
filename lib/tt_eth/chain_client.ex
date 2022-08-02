@@ -32,7 +32,7 @@ defmodule TTEth.ChainClient do
            s: 0,
            v: 0
          }
-         |> Transaction.sign_transaction(private_key, opts |> Keyword.fetch!(:chain_id))
+         |> Transaction.sign_transaction(private_key, opts[:chain_id])
          |> Transaction.serialize()
          |> ExRLP.encode()
          |> Base.encode16(case: :lower))
