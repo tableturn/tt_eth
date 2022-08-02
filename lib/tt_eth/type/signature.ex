@@ -1,5 +1,5 @@
 defmodule TTEth.Type.Signature do
-  @moduledoc false
+  @moduledoc "This module is an Ecto-compatible type that can represent Ethereum signatures."
   use TTEth.Type, size: 65
   alias TTEth.BitHelper
   alias TTEth.Libsecp256k1

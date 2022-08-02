@@ -54,7 +54,7 @@ defmodule TTEth.WalletTest do
 
     human_public_key =
       "0x58be6efb58e39ce4b5d1ca552d80f8c9009dfecec0e5a31fc8d22ee866320c506be5" <>
-      "8730c77623df9862d8041c1bdef8a031e5d38a1ac1b83d053277391f974c"
+        "8730c77623df9862d8041c1bdef8a031e5d38a1ac1b83d053277391f974c"
 
     public_key = human_public_key |> TTEth.Type.PublicKey.from_human!()
 

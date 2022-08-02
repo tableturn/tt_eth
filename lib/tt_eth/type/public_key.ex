@@ -1,5 +1,5 @@
 defmodule TTEth.Type.PublicKey do
-  @moduledoc false
+  @moduledoc "This module is an Ecto-compatible type that can represent Ethereum public keys."
   use TTEth.Type, size: 64
   alias TTEth.Libsecp256k1
 

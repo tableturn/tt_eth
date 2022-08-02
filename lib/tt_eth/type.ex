@@ -1,7 +1,7 @@
 defmodule TTEth.Type do
   @moduledoc """
-  In the database, ethereum related stuff is stored as normalized binaries. This ecto abstract
-  type allows to quickly compose new ethereum types that must conform to a certain size.
+  In the database, Ethereum related data is stored as normalized binaries. This Ecto abstract
+  type allows to quickly compose new Ethereum types that must conform to a certain size.
   """
 
   defmacro __using__(opts) do

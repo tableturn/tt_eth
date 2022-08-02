@@ -1,5 +1,7 @@
 defmodule TTEth.ChainClient do
-  @moduledoc false
+  @moduledoc """
+  A wrapper around `Ethereumex` providing the basics for various chain actions.
+  """
   alias TTEth.Behaviours.ChainClient
   alias TTEth.Transaction
 

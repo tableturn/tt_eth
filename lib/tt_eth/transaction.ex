@@ -1,8 +1,7 @@
 defmodule TTEth.Transaction do
   @moduledoc """
-  Ported from Blockchain.
+  Ported from [`Blockchain`](https://hex.pm/packages/blockchain).
   """
-
   alias TTEth.BitHelper
   alias TTEth.Libsecp256k1
 
@@ -61,6 +60,7 @@ defmodule TTEth.Transaction do
 
       iex> Transaction.serialize(%Transaction{ data: "", gas_limit: 21000, gas_price: 20000000000, init: "", nonce: 9, r: 0, s: 0, to: "55555555555555555555", v: 1, value: 1000000000000000000 })
       ["\t", <<4, 168, 23, 200, 0>>, "R\b", "55555555555555555555", <<13, 224, 182, 179, 167, 100, 0, 0>>, "", <<1>>, "", ""]
+
   """
   @spec serialize(t) :: ExRLP.t()
   def serialize(trx, include_vrs \\ true) do
@@ -92,21 +92,22 @@ defmodule TTEth.Transaction do
 
   ## Examples
 
-    iex> Transaction.sign_hash(<<2::256>>, <<1::256>>)
-    {28,
-     38938543279057362855969661240129897219713373336787331739561340553100525404231,
-     23772455091703794797226342343520955590158385983376086035257995824653222457926}
+      iex> Transaction.sign_hash(<<2::256>>, <<1::256>>)
+      {28,
+      38938543279057362855969661240129897219713373336787331739561340553100525404231,
+      23772455091703794797226342343520955590158385983376086035257995824653222457926}
 
-    iex> Transaction.sign_hash(<<5::256>>, <<1::256>>)
-    {27,
-     74927840775756275467012999236208995857356645681540064312847180029125478834483,
-     56037731387691402801139111075060162264934372456622294904359821823785637523849}
+      iex> Transaction.sign_hash(<<5::256>>, <<1::256>>)
+      {27,
+      74927840775756275467012999236208995857356645681540064312847180029125478834483,
+      56037731387691402801139111075060162264934372456622294904359821823785637523849}
 
-    iex> data = "ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080" |> TTEth.BitHelper.from_hex
-    iex> hash = data |> TTEth.keccak()
-    iex> private_key = "4646464646464646464646464646464646464646464646464646464646464646" |> TTEth.BitHelper.from_hex
-    iex> Transaction.sign_hash(hash, private_key, 1)
-    { 37, 18515461264373351373200002665853028612451056578545711640558177340181847433846, 46948507304638947509940763649030358759909902576025900602547168820602576006531 }
+      iex> data = "ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080" |> TTEth.BitHelper.from_hex
+      iex> hash = data |> TTEth.keccak()
+      iex> private_key = "4646464646464646464646464646464646464646464646464646464646464646" |> TTEth.BitHelper.from_hex
+      iex> Transaction.sign_hash(hash, private_key, 1)
+      { 37, 18515461264373351373200002665853028612451056578545711640558177340181847433846, 46948507304638947509940763649030358759909902576025900602547168820602576006531 }
+
   """
   @spec sign_hash(BitHelper.keccak_hash(), private_key, integer() | nil) ::
           {hash_v, hash_r, hash_s}
@@ -130,7 +131,7 @@ defmodule TTEth.Transaction do
   formula defined in Eq.(214) and Eq.(215) of the Yellow Paper.
 
   Note: As per EIP-155 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md),
-        we will append the chain-id and nil elements to the serialized transaction.
+  we will append the chain-id and nil elements to the serialized transaction.
 
   ## Examples
 
@@ -142,6 +143,7 @@ defmodule TTEth.Transaction do
 
       iex> Transaction.transaction_hash(%Transaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<1>>, value: 5, data: <<1>>}, 1)
       <<132, 79, 28, 4, 212, 58, 235, 38, 66, 211, 167, 102, 36, 58, 229, 88, 238, 251, 153, 23, 121, 163, 212, 64, 83, 111, 200, 206, 54, 43, 112, 53>>
+
   """
   @spec transaction_hash(__MODULE__.t(), integer() | nil) :: BitHelper.keccak_hash()
   def transaction_hash(trx, chain_id \\ nil) do
@@ -165,6 +167,7 @@ defmodule TTEth.Transaction do
 
       iex> Transaction.sign_transaction(%Transaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<>>, value: 5, init: <<1>>}, <<1::256>>, 1)
       %Transaction{data: <<>>, gas_limit: 7, gas_price: 6, init: <<1>>, nonce: 5, r: 25739987953128435966549144317523422635562973654702886626580606913510283002553, s: 41423569377768420285000144846773344478964141018753766296386430811329935846420, to: "", v: 38, value: 5}
+
   """
   @spec sign_transaction(__MODULE__.t(), private_key, integer() | nil) :: __MODULE__.t()
   def sign_transaction(trx, private_key, chain_id \\ nil) do

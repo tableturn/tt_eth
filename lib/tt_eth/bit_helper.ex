@@ -3,6 +3,8 @@ defmodule TTEth.BitHelper do
   Helpers for common operations on the blockchain.
 
   This was copied from the Ethereum Mana client.
+
+  SEE: https://github.com/mana-ethereum/mana/blob/master/apps/blockchain/lib/bit_helper.ex
   """
   use Bitwise
 

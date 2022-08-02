@@ -6,10 +6,19 @@ Elixir primitives for Ethereum based development.
 
 ## Features
 
+- Ecto compatible Ethereum types.
 - A chain client.
 - Transaction creation.
 - Simple wallet handling.
-- Various Ethereum based helpers.
+- Various Ethereum based helper functions.
+
+## Documentation
+
+Generate the package documentation with:
+
+```bash
+mix docs
+```
 
 ## TODO
 

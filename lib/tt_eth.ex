@@ -37,17 +37,28 @@ defmodule TTEth do
   def new_keypair(_),
     do: :crypto.generate_key(:ecdh, :secp256k1) |> new_keypair()
 
-  @doc "Computes the SHA3-256 of the given data."
-  # Previously `:keccakf1600.sha3_256/1`
+  @doc """
+  Computes the SHA3-256 of the given data.
+
+  Delegates to `ExKeccak.hash_256/1`.
+  """
   @spec keccak(binary) :: binary
   def keccak(data) when is_binary(data),
     do: data |> ExKeccak.hash_256()
 
+  @doc """
+  Reflects the current chain id. Configured in `config/...`:
+
+  ```
+  config :tt_eth,
+    chain_id: "1234567"
+  ```
+  """
   @spec chain_id() :: binary()
   def chain_id(),
     do: :tt_eth |> Application.fetch_env!(:chain_id) |> to_string()
 
-  @doc "Signs and sends a transaction to the chain."
+  @doc "Signs and sends a transaction to the chain using the configured `TTEth.ChainClient`."
   def send_raw_transaction(%Wallet{} = wallet, to, method, args, opts \\ []) do
     with {_, %{private_key: private_key, human_address: human_address}} <-
            {:wallet, wallet},
@@ -65,12 +76,23 @@ defmodule TTEth do
 
   ## Dependencies / Injection.
 
+  @doc """
+  Reflects the current chain client module. Can be used when testing.
+
+  Configured in `config/...`:
+
+  ```
+  config :tt_eth,
+    chain_client: YourModule.ChainClient
+  ```
+  """
   @spec chain_client() :: module
   def chain_client(),
     do: get_env(:tt_eth, :chain_client, TTEth.ChainClient)
 
   ## Mocks related stuff.
 
+  @doc false
   def all_mocks(),
     do: [
       %{
@@ -82,7 +104,7 @@ defmodule TTEth do
     ]
 
   @doc """
-  Decodes a 0x prefixed hex encoded value to an unsigned int.
+  Decodes a `0x` prefixed hex encoded value to an unsigned int.
 
   ## Examples
 
@@ -99,6 +121,11 @@ defmodule TTEth do
       |> hex_to_binary!()
       |> :binary.decode_unsigned()
 
+  @doc """
+  Decodes a `0x` prefixed hex encoded value to a binary.
+
+  Handles padding as required.
+  """
   @spec hex_to_binary!(<<_::16, _::_*8>>) :: binary
   def hex_to_binary!("0x" <> rest),
     do:

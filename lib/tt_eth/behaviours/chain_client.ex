@@ -1,5 +1,9 @@
 defmodule TTEth.Behaviours.ChainClient do
-  @moduledoc false
+  @moduledoc """
+  The behviours for a `TTEth.ChainClient` client.
+
+  This allows for testing etc.
+  """
 
   @type address :: TTEth.Type.Address.t()
   @type private_key :: TTEth.Type.PrivateKey.t()

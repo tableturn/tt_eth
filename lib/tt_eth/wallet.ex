@@ -1,5 +1,7 @@
 defmodule TTEth.Wallet do
-  @moduledoc false
+  @moduledoc """
+  Provides a handle struct - `TTEth.Wallet.t()` for encapsulating a wallet.
+  """
   alias TTEth.Type.{Address, PublicKey, PrivateKey}
 
   @type t :: %__MODULE__{}
@@ -11,8 +13,6 @@ defmodule TTEth.Wallet do
     :human_public_key,
     :human_private_key
   ]
-
-  @me __MODULE__
 
   @spec named(atom) :: t()
   def named(name),
@@ -34,7 +34,7 @@ defmodule TTEth.Wallet do
   def new({pub, priv} \\ TTEth.new_keypair()) when is_binary(pub) and is_binary(priv) do
     address = pub |> Address.from_public_key!()
 
-    struct!(%@me{}, %{
+    struct!(%__MODULE__{}, %{
       address: address |> Address.from_human!(),
       public_key: pub |> PublicKey.from_human!(),
       private_key: priv |> PrivateKey.from_human!(),
