@@ -1,8 +1,8 @@
-defmodule TTEth.Libsecp256k1Test do
+defmodule TTEth.Secp256k1Test do
   use TTEth.Case
-  alias TTEth.Libsecp256k1
+  alias TTEth.Secp256k1
 
-  describe "ecdsa_sign_compact/4" do
+  describe "ecdsa_sign_compact/2" do
     test "signs correctly" do
       hash =
         <<122, 218, 84, 177, 195, 163, 51, 8, 145, 16, 210, 71, 30, 183, 239, 127, 143, 8, 195,
@@ -12,22 +12,19 @@ defmodule TTEth.Libsecp256k1Test do
         <<65, 20, 46, 36, 27, 144, 22, 222, 241, 51, 92, 133, 241, 195, 200, 154, 247, 164, 218,
           217, 56, 249, 199, 93, 141, 172, 232, 206, 57, 23, 150, 106>>
 
-      type = :default
-      bin = <<>>
-
       hash
-      |> Libsecp256k1.ecdsa_sign_compact(private_key, type, bin)
+      |> Secp256k1.ecdsa_sign_compact(private_key)
       |> assert_match(
         {:ok,
-         <<66, 208, 156, 224, 128, 204, 129, 24, 195, 244, 115, 153, 215, 19, 38, 120, 165, 166,
-           236, 25, 113, 90, 225, 85, 149, 230, 184, 170, 168, 53, 193, 134, 81, 135, 66, 106, 24,
-           64, 137, 194, 87, 254, 45, 167, 240, 41, 163, 17, 206, 80, 5, 245, 152, 82, 189, 35,
-           156, 41, 13, 26, 82, 44, 27, 93>>, 1}
+         {<<66, 208, 156, 224, 128, 204, 129, 24, 195, 244, 115, 153, 215, 19, 38, 120, 165, 166,
+            236, 25, 113, 90, 225, 85, 149, 230, 184, 170, 168, 53, 193, 134, 81, 135, 66, 106,
+            24, 64, 137, 194, 87, 254, 45, 167, 240, 41, 163, 17, 206, 80, 5, 245, 152, 82, 189,
+            35, 156, 41, 13, 26, 82, 44, 27, 93>>, 1}}
       )
     end
   end
 
-  describe "ecdsa_recover_compact/4" do
+  describe "ecdsa_recover_compact/3" do
     test "recovers..." do
       hash =
         <<122, 218, 84, 177, 195, 163, 51, 8, 145, 16, 210, 71, 30, 183, 239, 127, 143, 8, 195,
@@ -39,11 +36,8 @@ defmodule TTEth.Libsecp256k1Test do
           123, 86, 85, 36, 67, 129, 86, 171, 68, 74, 249, 190, 206, 56, 250, 190, 52, 156, 42, 35,
           224, 79, 209, 35, 63>>
 
-      type = :uncompressed
-      v = 1
-
       hash
-      |> Libsecp256k1.ecdsa_recover_compact(sig, type, v)
+      |> Secp256k1.ecdsa_recover_compact(sig, _v = 1)
       |> assert_match(
         {:ok,
          <<4, 96, 54, 106, 191, 177, 70, 92, 188, 206, 38, 212, 23, 241, 59, 159, 22, 81, 138, 66,
@@ -54,14 +48,14 @@ defmodule TTEth.Libsecp256k1Test do
     end
   end
 
-  describe "ec_pubkey_create/2" do
+  describe "ec_pubkey_create/1" do
     test "creates a public key from a passed private key" do
       priv =
         <<238, 255, 56, 30, 67, 190, 98, 120, 142, 198, 48, 28, 202, 138, 22, 181, 45, 24, 71,
           105, 156, 241, 102, 167, 211, 182, 175, 204, 235, 23, 163, 84>>
 
       priv
-      |> Libsecp256k1.ec_pubkey_create(:uncompressed)
+      |> Secp256k1.ec_pubkey_create()
       |> assert_match(
         {:ok,
          <<4, 152, 50, 78, 223, 162, 101, 130, 69, 69, 56, 143, 176, 124, 78, 47, 137, 162, 245,

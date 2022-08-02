@@ -2,7 +2,7 @@ defmodule TTEth.Type.Signature do
   @moduledoc "This module is an Ecto-compatible type that can represent Ethereum signatures."
   use TTEth.Type, size: 65
   alias TTEth.BitHelper
-  alias TTEth.Libsecp256k1
+  alias TTEth.Secp256k1
   import TTEth, only: [keccak: 1]
 
   @secp256k1n 115_792_089_237_316_195_423_570_985_008_687_907_852_837_564_279_074_904_382_605_163_141_518_161_494_337
@@ -34,9 +34,9 @@ defmodule TTEth.Type.Signature do
   def sign(msg, priv, chain_id \\ nil) do
     msg
     |> digest()
-    |> Libsecp256k1.ecdsa_sign_compact(priv, :default, <<>>)
+    |> Secp256k1.ecdsa_sign_compact(priv)
     |> case do
-      {:ok, <<r::size(256), s::size(256)>>, v} ->
+      {:ok, {<<r::size(256), s::size(256)>>, v}} ->
         {:ok, {v_from_recovery_id(v, chain_id), r, s}}
 
       {:error, _} ->
@@ -58,7 +58,7 @@ defmodule TTEth.Type.Signature do
 
     v = v_to_recovery_id(rec_id, chain_id)
 
-    case Libsecp256k1.ecdsa_recover_compact(hash, sig, :uncompressed, v) do
+    case Secp256k1.ecdsa_recover_compact(hash, sig, v) do
       {:ok, public_key} -> {:ok, public_key}
       {:error, reason} -> {:error, to_string(reason)}
     end

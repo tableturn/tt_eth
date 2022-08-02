@@ -6,6 +6,7 @@ defmodule TTEth.Type.Address do
   use TTEth.Type, size: 20
   alias TTEth.BitHelper
   alias TTEth.Type.PublicKey
+  import TTEth, only: [keccak: 1]
 
   @human_size @hex_size + 2
 
@@ -16,7 +17,7 @@ defmodule TTEth.Type.Address do
     |> case do
       # The address is calculated by hashing the public key and keeping only
       # the first twenty bytes.
-      {:ok, val} -> {:ok, val |> TTEth.keccak() |> BitHelper.mask_bitstring(20 * 8)}
+      {:ok, val} -> {:ok, val |> keccak() |> BitHelper.mask_bitstring(20 * 8)}
       {:error, _} = ret -> ret
     end
   end

@@ -2,8 +2,7 @@ defmodule TTEth.Transaction do
   @moduledoc """
   Ported from [`Blockchain`](https://hex.pm/packages/blockchain).
   """
-  alias TTEth.BitHelper
-  alias TTEth.Libsecp256k1
+  alias TTEth.{BitHelper, Secp256k1}
 
   @type private_key :: <<_::256>>
 
@@ -112,8 +111,8 @@ defmodule TTEth.Transaction do
   @spec sign_hash(BitHelper.keccak_hash(), private_key, integer() | nil) ::
           {hash_v, hash_r, hash_s}
   def sign_hash(hash, private_key, chain_id \\ nil) do
-    {:ok, <<r::size(256), s::size(256)>>, recovery_id} =
-      Libsecp256k1.ecdsa_sign_compact(hash, private_key, :default, <<>>)
+    {:ok, {<<r::size(256), s::size(256)>>, recovery_id}} =
+      Secp256k1.ecdsa_sign_compact(hash, private_key)
 
     # Fork Ψ EIP-155
     recovery_id =
@@ -146,14 +145,14 @@ defmodule TTEth.Transaction do
 
   """
   @spec transaction_hash(__MODULE__.t(), integer() | nil) :: BitHelper.keccak_hash()
-  def transaction_hash(trx, chain_id \\ nil) do
-    trx
-    |> serialize(false)
-    # See EIP-155
-    |> Kernel.++(if chain_id, do: [chain_id |> :binary.encode_unsigned(), <<>>, <<>>], else: [])
-    |> ExRLP.encode()
-    |> TTEth.keccak()
-  end
+  def transaction_hash(trx, chain_id \\ nil),
+    do:
+      trx
+      |> serialize(false)
+      # See EIP-155
+      |> Kernel.++(if chain_id, do: [chain_id |> :binary.encode_unsigned(), <<>>, <<>>], else: [])
+      |> ExRLP.encode()
+      |> TTEth.keccak()
 
   @doc """
   Takes a given transaction and returns a version signed
