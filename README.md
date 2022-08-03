@@ -8,6 +8,7 @@ Elixir primitives for Ethereum based development.
 
 - Ecto compatible Ethereum types.
 - A chain client.
+- A wrapper around common contract interaction.
 - Transaction creation.
 - Simple wallet handling.
 - Various Ethereum based helper functions.
