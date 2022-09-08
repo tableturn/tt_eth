@@ -4,12 +4,15 @@ defmodule TTEth.Secp256k1 do
   """
 
   @doc """
-  Delegates to `ExSecp256k1.recover_compact/3`.
+  Delegates to `ExSecp256k1.recover_compact/3` with guards around the `recovery_id` value.
   """
   @spec ecdsa_recover_compact(binary(), binary(), non_neg_integer()) ::
           {:ok, binary()} | {:error, atom()}
-  def ecdsa_recover_compact(hash, sig, v),
-    do: ExSecp256k1.recover_compact(hash, sig, v)
+  def ecdsa_recover_compact(hash, sig, recovery_id) when recovery_id in [0, 1],
+    do: ExSecp256k1.recover_compact(hash, sig, recovery_id)
+
+  def ecdsa_recover_compact(_hash, _sig, _recovery_id),
+    do: {:error, :invalid_recovery_id}
 
   @doc """
   Delegates to `ExSecp256k1.sign_compact/2`.

@@ -51,14 +51,14 @@ defmodule TTEth.Type.Signature do
   end
 
   @spec recover(binary, components, chain_id | nil) :: {:ok, binary} | {:error, binary}
-  def recover(hash, {rec_id, r, s}, chain_id \\ nil) do
+  def recover(hash, {v, r, s}, chain_id \\ nil) do
     sig =
       BitHelper.pad(:binary.encode_unsigned(r), 32) <>
         BitHelper.pad(:binary.encode_unsigned(s), 32)
 
-    v = v_to_recovery_id(rec_id, chain_id)
+    recovery_id = v_to_recovery_id(v, chain_id)
 
-    case Secp256k1.ecdsa_recover_compact(hash, sig, v) do
+    case Secp256k1.ecdsa_recover_compact(hash, sig, recovery_id) do
       {:ok, public_key} -> {:ok, public_key}
       {:error, reason} -> {:error, to_string(reason)}
     end
