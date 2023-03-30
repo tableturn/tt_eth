@@ -11,7 +11,7 @@ defmodule TTEth.ChainClient do
   def eth_call(contract_address, encoded_args, opts \\ []),
     do:
       %{data: "0x" <> encoded_args, to: contract_address}
-      |> Ethereumex.HttpClient.eth_call("latest", opts)
+      |> Ethereumex.HttpClient.eth_call(opts |> Keyword.get(:block, "latest"), opts)
 
   @impl ChainClient
   def eth_send_raw_transaction(tx_data, opts \\ []),

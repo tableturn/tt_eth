@@ -14,7 +14,7 @@ defmodule TTEth.ContractTest do
   describe "call/2+1" do
     test "delegates properly without encodable arguments" do
       ChainClientMock
-      |> expect(:eth_call, fn @address, @total_supply_args ->
+      |> expect(:eth_call, fn @address, @total_supply_args, _opts ->
         {:ok, @total_supply_return}
       end)
 
@@ -23,12 +23,27 @@ defmodule TTEth.ContractTest do
 
     test "delegates properly with encodable arguments" do
       ChainClientMock
-      |> expect(:eth_call, fn @address, @balance_of_args ->
+      |> expect(:eth_call, fn @address, @balance_of_args, _opts ->
         {:ok, @balance_of_return}
       end)
 
       @address
       |> TestToken.call(:balance_of, [@someone_address |> TTEth.Type.Address.from_human!()])
+    end
+
+    test "delegates properly with passed options" do
+      ChainClientMock
+      |> expect(:eth_call, fn @address, @balance_of_args, opts ->
+        opts |> Keyword.fetch!(:block) |> assert_equal("0x1")
+        {:ok, @balance_of_return}
+      end)
+
+      @address
+      |> TestToken.call(
+        :balance_of,
+        [@someone_address |> TTEth.Type.Address.from_human!()],
+        block: "0x1"
+      )
     end
   end
 
