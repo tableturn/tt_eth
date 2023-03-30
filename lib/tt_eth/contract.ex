@@ -86,14 +86,33 @@ defmodule TTEth.Contract do
     [values, List.wrap(abi)]
     |> Enum.zip()
     |> Enum.map(fn
-      {val, :bool} -> val
-      {val, :string} -> val
-      {val, {:uint, _}} -> val
-      {val, {:int, _}} -> val
-      {val, {:bytes, _}} -> val
-      {val, {:array, spec}} -> humanize_values(val, spec)
-      {val, {:tuple, spec}} -> humanize_values(val, spec)
-      {val, :address} -> Address.to_human!(val)
+      {val, :bool} ->
+        val
+
+      {val, :string} ->
+        val
+
+      {val, {:uint, _}} ->
+        val
+
+      {val, {:int, _}} ->
+        val
+
+      {val, {:bytes, _}} ->
+        val
+
+      {val, {:array, {:tuple, spec}}} when is_list(val) ->
+        # Take the val and pair up the spec for each one.
+        val |> Enum.map(&(&1 |> humanize_values(spec)))
+
+      {val, {:array, spec}} ->
+        humanize_values(val, spec)
+
+      {val, {:tuple, spec}} ->
+        humanize_values(val, spec)
+
+      {val, :address} ->
+        Address.to_human!(val)
     end)
   end
 end
