@@ -32,7 +32,7 @@ defmodule TTEth.Contract do
                 Map.put(acc, event_kind, sel |> Contract.build_event_topics())
               end)
 
-      def call(contract_address, method, args \\ []) do
+      def call(contract_address, method, args \\ [], opts \\ []) do
         %{returns: return_abi} = abi = @abi[method]
 
         encoded_args =
@@ -40,7 +40,7 @@ defmodule TTEth.Contract do
           |> ABI.TypeEncoder.encode(abi)
           |> Base.encode16(case: :lower)
 
-        Contract.call(contract_address, encoded_args, return_abi)
+        Contract.call(contract_address, encoded_args, return_abi, opts)
       end
 
       def event_selector(event_kind),
@@ -51,9 +51,9 @@ defmodule TTEth.Contract do
     end
   end
 
-  def call(contract_address, encoded_args, return_abi) do
+  def call(contract_address, encoded_args, return_abi, opts \\ []) do
     with {_, {:ok, bytes}} <-
-           {:call, chain_client().eth_call(contract_address, encoded_args)},
+           {:call, chain_client().eth_call(contract_address, encoded_args, opts)},
          {_, decoded_bytes} <-
            {:decode_bytes, bytes |> String.slice(2..-1) |> Base.decode16!(case: :lower)},
          {_, decoded_values} <-
