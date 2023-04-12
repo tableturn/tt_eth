@@ -75,7 +75,8 @@ defmodule TTEth.ContractTest do
           {"approve", :approve},
           {"transferFrom", :transfer_from},
           {"Transfer", :transfer},
-          {"ERR_OWNER_SAME_AS_RECIPIENT", :err_owner_same_as_recipient}
+          {"ERR_OWNER_SAME_AS_RECIPIENT", :err_owner_same_as_recipient},
+          {nil, :constructor}
         ] do
       test "takes `#{subject}` and returns `#{inspect(expected)}`" do
         Contract.atomize(unquote(subject))
