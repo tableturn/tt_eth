@@ -18,18 +18,18 @@ defmodule TTEth.Contract do
 
       @abi parsed_abi
            |> Enum.reduce(%{}, fn sel, acc ->
-             Map.put(acc, sel.function |> Contract.atomize(), sel)
+             acc |> Map.put(sel.function |> Contract.atomize(), sel)
            end)
 
       @event_selectors parsed_abi
                        |> Enum.filter(&match?(%{type: :event}, &1))
                        |> Enum.reduce(%{}, fn sel, acc ->
-                         acc |> Map.put(Contract.atomize(sel.function), sel)
+                         acc |> Map.put(sel.function |> Contract.atomize(), sel)
                        end)
 
       @events @event_selectors
               |> Enum.reduce(%{}, fn {event_kind, sel}, acc ->
-                Map.put(acc, event_kind, sel |> Contract.build_event_topics())
+                acc |> Map.put(event_kind, sel |> Contract.build_event_topics())
               end)
 
       def call(contract_address, method, args \\ [], opts \\ []) do
@@ -67,6 +67,10 @@ defmodule TTEth.Contract do
     method = ABI.FunctionSelector.encode(sel)
     %{method: method, topic: [encode_method(method)]}
   end
+
+  # The constructor is a special case, it's not an error and it's not a function.
+  def atomize(nil),
+    do: :constructor
 
   def atomize(value),
     do: value |> Macro.underscore() |> String.to_atom()
