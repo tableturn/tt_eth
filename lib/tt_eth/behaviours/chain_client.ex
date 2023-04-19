@@ -1,6 +1,6 @@
 defmodule TTEth.Behaviours.ChainClient do
   @moduledoc """
-  The behviours for a `TTEth.ChainClient` client.
+  The behaviours for a `TTEth.ChainClient` client.
 
   This allows for testing etc.
   """

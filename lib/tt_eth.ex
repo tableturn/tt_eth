@@ -88,7 +88,11 @@ defmodule TTEth do
   """
   @spec chain_client() :: module
   def chain_client(),
-    do: get_env(:tt_eth, :chain_client, TTEth.ChainClient)
+    do: :tt_eth |> get_env(:chain_client, TTEth.ChainClient)
+
+  @spec transaction_module() :: module
+  def transaction_module(),
+    do: :tt_eth |> get_env(:transaction_module, TTEth.Transactions.EIP1559Transaction)
 
   ## Mocks related stuff.
 
