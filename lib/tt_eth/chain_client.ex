@@ -49,12 +49,21 @@ defmodule TTEth.ChainClient do
   def eth_get_filter_changes(filter_id, opts \\ []),
     do: filter_id |> HttpClient.eth_get_filter_changes(opts)
 
+  @impl ChainClient
+  def eth_get_max_priority_fee_per_gas(opts \\ []),
+    do: "eth_maxPriorityFeePerGas" |> HttpClient.request(opts, [])
+
+  @impl ChainClient
+  def eth_estimate_gas(%{} = tx_obj, opts \\ []),
+    do: tx_obj |> HttpClient.eth_estimate_gas(opts)
+
+  @impl ChainClient
+  def eth_get_block_by_number("" <> block, opts \\ []),
+    do: block |> HttpClient.eth_get_block_by_number(opts)
+
   ## Helpers outside of the ChainClient behaviour.
 
-  def eth_estimate_gas(tx_hash, opts \\ []),
-    do: tx_hash |> HttpClient.eth_estimate_gas(opts)
-
-  def eth_get_transaction_receipt(tx_hash, opts \\ []),
+  def eth_get_transaction_receipt("" <> tx_hash, opts \\ []),
     do: tx_hash |> HttpClient.eth_get_transaction_receipt(opts)
 
   ## Private.
