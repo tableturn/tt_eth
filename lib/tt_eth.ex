@@ -58,8 +58,17 @@ defmodule TTEth do
   def chain_id(),
     do: :tt_eth |> Application.fetch_env!(:chain_id) |> to_string()
 
+  ## Wrappers for the underlying chain client.
+
   @doc "Signs and sends a transaction to the chain using the configured `TTEth.ChainClient`."
-  def send_raw_transaction(%Wallet{} = wallet, to, method, args, opts \\ []) do
+  def send_raw_transaction(%Wallet{} = wallet, to, method, args, opts \\ []),
+    do:
+      wallet
+      |> build_tx_data(to, method, args, opts)
+      |> chain_client().eth_send_raw_transaction(opts)
+
+  @doc "Builds the tx data using the configured `TTEth.ChainClient`."
+  def build_tx_data(%Wallet{} = wallet, to, method, args, opts \\ []) do
     with {_, %{private_key: private_key, human_address: human_address}} <-
            {:wallet, wallet},
          {_, {:ok, "0x" <> raw_nonce}} <-
