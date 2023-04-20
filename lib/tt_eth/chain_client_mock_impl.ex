@@ -33,4 +33,16 @@ defmodule TTEth.ChainClientMockImpl do
   @impl ChainClient
   def eth_get_filter_changes(_filter_id, _opts \\ []),
     do: :error
+
+  @impl ChainClient
+  def eth_get_max_priority_fee_per_gas(_opts \\ []),
+    do: {:ok, "0x10"}
+
+  @impl ChainClient
+  def eth_estimate_gas(%{} = _tx_obj, _opts \\ []),
+    do: {:ok, "0x5208"}
+
+  @impl ChainClient
+  def eth_get_block_by_number(_block, _opts \\ []),
+    do: {:ok, %{"number" => "0x1", "baseFeePerGas" => "0x10"}}
 end

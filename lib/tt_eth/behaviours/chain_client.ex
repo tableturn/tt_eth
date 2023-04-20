@@ -15,6 +15,7 @@ defmodule TTEth.Behaviours.ChainClient do
   @type block_id :: String.t()
   @type filter_params :: map
   @type filter_id :: String.t()
+  @type tx_obj :: map()
 
   @callback eth_call(contract :: address, encoded_args) :: any
   @callback eth_call(contract :: address, encoded_args, opts) :: any
@@ -36,4 +37,13 @@ defmodule TTEth.Behaviours.ChainClient do
 
   @callback eth_get_filter_changes(filter_id) :: any
   @callback eth_get_filter_changes(filter_id, opts) :: any
+
+  @callback eth_get_max_priority_fee_per_gas() :: any
+  @callback eth_get_max_priority_fee_per_gas(opts) :: any
+
+  @callback eth_estimate_gas(tx_obj) :: any
+  @callback eth_estimate_gas(tx_obj, opts) :: any
+
+  @callback eth_get_block_by_number(block_id) :: any
+  @callback eth_get_block_by_number(block_id, opts) :: any
 end

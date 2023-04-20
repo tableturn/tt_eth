@@ -70,9 +70,26 @@ defmodule TTEth do
            {:abi_encode, method |> ABI.encode(args)} do
       to
       |> chain_client().build_tx_data(abi_data, private_key, nonce, opts)
-      |> chain_client().eth_send_raw_transaction(opts)
     end
   end
+
+  @doc """
+  Delegate to `TTEth.ChainClient.eth_get_max_priority_fee_per_gas/0`.
+  """
+  def get_max_priority_fee_per_gas(),
+    do: chain_client().eth_get_max_priority_fee_per_gas()
+
+  @doc """
+  Delegate to `TTEth.ChainClient.eth_estimate_gas/1+2`.
+  """
+  def estimate_gas(%{} = tx_obj, opts \\ []),
+    do: tx_obj |> chain_client().eth_estimate_gas(opts)
+
+  @doc """
+  Delegate to `TTEth.ChainClient.eth_get_block/1+2`.
+  """
+  def get_block_by_number("" <> block, opts \\ []),
+    do: block |> chain_client().eth_get_block_by_number(opts)
 
   ## Dependencies / Injection.
 
