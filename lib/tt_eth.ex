@@ -155,6 +155,14 @@ defmodule TTEth do
   Decodes a `0x` prefixed hex encoded value to a binary.
 
   Handles padding as required.
+
+  ## Examples
+
+      iex> hex_to_binary!("0x10a")
+      <<1, 10>>
+      iex> hex_to_binary!("0x010a")
+      <<1, 10>>
+
   """
   @spec hex_to_binary!(<<_::16, _::_*8>>) :: binary
   def hex_to_binary!("0x" <> rest),
@@ -162,6 +170,41 @@ defmodule TTEth do
       rest
       |> maybe_pad_leading(String.length(rest))
       |> Base.decode16!(case: :mixed)
+
+  @doc """
+  Encodes a binary to a `0x` prefixed hex encoded value.
+
+  This is `0` leading aware.
+
+  ## Examples
+
+      iex> binary_to_hex!(<<1, 10>>)
+      "0x10a"
+      iex> binary_to_hex!(<<33, 10>>)
+      "0x210a"
+
+  """
+  def binary_to_hex!(bin) when is_binary(bin),
+    do:
+      bin
+      |> Base.encode16(case: :lower)
+      |> maybe_strip_leading_zero()
+      |> hex_prefix!()
+
+  @doc """
+  Prepends a `0x` to a binary if needed.
+
+  ## Examples
+
+      iex> hex_prefix!("0x123")
+      "0x123"
+      iex> hex_prefix!("123")
+      "0x123"
+
+  """
+  @spec hex_prefix!(binary) :: binary
+  def hex_prefix!("0x" <> val), do: "0x" <> val
+  def hex_prefix!(val), do: "0x" <> val
 
   ## Private.
 
@@ -171,4 +214,11 @@ defmodule TTEth do
 
   defp maybe_pad_leading(rest, _len),
     do: "0" <> rest
+
+  # Handle stripping of leading `0`s.
+  defp maybe_strip_leading_zero("0" <> rest),
+    do: rest
+
+  defp maybe_strip_leading_zero(bin),
+    do: bin
 end

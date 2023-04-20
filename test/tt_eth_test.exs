@@ -1,5 +1,6 @@
 defmodule TTEthTest do
   use TTEth.Case, async: true
+  import TTEth, only: [binary_to_hex!: 1]
   doctest TTEth, import: true
 
   @chain_id 12345
@@ -105,6 +106,83 @@ defmodule TTEthTest do
         foo: :bar,
         chain_id: @chain_id
       )
+    end
+  end
+
+  describe "build_tx_data/4+1" do
+    test "encodes the transaction data" do
+      wallet = Wallet.new()
+      to_human = Faker.Blockchain.Ethereum.address()
+      to = to_human |> TTEth.Type.Address.from_human!()
+      recipient = Faker.Blockchain.Ethereum.address()
+      raw_recipient = recipient |> TTEth.Type.Address.from_human!()
+
+      ChainClientMock
+      # We want to make sure that the account nonce is fetched.
+      |> expect(:eth_get_transaction_count, fn account, block_id ->
+        assert account == wallet.human_address
+        assert block_id == "pending"
+        {:ok, "0x123"}
+      end)
+
+      wallet
+      |> TTEth.build_tx_data(to, "transfer(address,uint256)", [raw_recipient, 1],
+        chain_id: @chain_id
+      )
+    end
+  end
+
+  describe "estimate_gas/1+2" do
+    test "delegates to `ChainClient.eth_estimate_gas/1+2`" do
+      to_human = Faker.Blockchain.Ethereum.address()
+      to = to_human |> TTEth.Type.Address.from_human!()
+
+      tx_obj = %{
+        from: Faker.Blockchain.Ethereum.address(),
+        to: to_human,
+        data: "transfer(address,uint256)" |> ABI.encode([to, 10]) |> binary_to_hex!()
+      }
+
+      ChainClientMock
+      # We want to make sure that the chain client attempts to estimate the gas.
+      |> expect(:eth_estimate_gas, fn tx_obj_, opts_ ->
+        assert tx_obj_ == tx_obj
+        assert opts_ == []
+
+        {:ok, "0x57588"}
+      end)
+
+      # Trigger the call.
+      tx_obj |> TTEth.estimate_gas()
+    end
+  end
+
+  describe "get_max_priority_fee_per_gas/0" do
+    test "delegates to `ChainClient.eth_get_max_priority_fee_per_gas/0+1`" do
+      ChainClientMock
+      # We want to make sure that the chain client is called to get the max priority fee.
+      |> expect(:eth_get_max_priority_fee_per_gas, fn ->
+        {:ok, "0x57582423"}
+      end)
+
+      # Trigger the call.
+      TTEth.get_max_priority_fee_per_gas()
+    end
+  end
+
+  describe "get_block_by_number/1+2" do
+    test "delegates to `ChainClient.eth_get_block_by_number/1+2`" do
+      ChainClientMock
+      # We want to make sure that the chain client is called to get the max priority fee.
+      |> expect(:eth_get_block_by_number, fn block_, opts_ ->
+        assert block_ == "pending"
+        assert opts_ == []
+
+        {:ok, %{"baseFeePerGas" => "0x10"}}
+      end)
+
+      # Trigger the call.
+      "pending" |> TTEth.get_block_by_number()
     end
   end
 end
