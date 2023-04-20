@@ -6,7 +6,7 @@ defmodule TTEth.ChainClient do
   """
   alias TTEth.Behaviours.ChainClient
   alias Ethereumex.HttpClient
-  import TTEth, only: [transaction_module: 0]
+  import TTEth, only: [transaction_module: 0, hex_prefix!: 1]
 
   @behaviour ChainClient
 
@@ -15,7 +15,7 @@ defmodule TTEth.ChainClient do
   @impl ChainClient
   def eth_call(contract_address, encoded_args, opts \\ []),
     do:
-      %{data: encoded_args |> prepend_hex(), to: contract_address}
+      %{data: encoded_args |> hex_prefix!(), to: contract_address}
       |> HttpClient.eth_call(opts |> Keyword.get(:block, "latest"), opts)
 
   @impl ChainClient
@@ -31,7 +31,7 @@ defmodule TTEth.ChainClient do
         |> transaction_module().new(abi_data, nonce, opts)
         |> transaction_module().build(private_key)
         |> Base.encode16(case: :lower)
-        |> prepend_hex()
+        |> hex_prefix!()
 
   @impl ChainClient
   def eth_get_transaction_count(address, block \\ "latest", opts \\ []),
@@ -65,9 +65,4 @@ defmodule TTEth.ChainClient do
 
   def eth_get_transaction_receipt("" <> tx_hash, opts \\ []),
     do: tx_hash |> HttpClient.eth_get_transaction_receipt(opts)
-
-  ## Private.
-
-  defp prepend_hex(data),
-    do: "0x" <> data
 end
