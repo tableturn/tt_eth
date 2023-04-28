@@ -105,6 +105,10 @@ defmodule TTEth.Contract do
         # Take the val and pair up the spec for each one.
         val |> Enum.map(&(&1 |> humanize_values(spec)))
 
+      {val, {:array, :address}} when is_list(val) ->
+        # Take the val and pair up the spec for each one.
+        val |> Enum.map(&(&1 |> List.wrap() |> humanize_values(:address)))
+
       {val, {:array, spec}} ->
         humanize_values(val, spec)
 
