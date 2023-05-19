@@ -45,5 +45,5 @@ defmodule TTEth.Behaviours.ChainClient do
   @callback eth_estimate_gas(tx_obj, opts) :: any
 
   @callback eth_get_block_by_number(block_id) :: any
-  @callback eth_get_block_by_number(block_id, opts) :: any
+  @callback eth_get_block_by_number(block_id, boolean) :: any
 end
