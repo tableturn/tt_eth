@@ -1,14 +1,15 @@
 defmodule TTEth.Transactions.EIP1559TransactionTest do
   use TTEth.Case
   alias TTEth.Transactions.EIP1559Transaction
+  alias TTEth.Type.{Address, PrivateKey, PublicKey}
 
   # Polygon Mumbai.
   @chain_id 80001
 
   @private_key_human "0x62aa6ec41b56439d2c5df352c45a00389cef262b3761e13c6481e35ab027d262"
-  @private_key @private_key_human |> TTEth.Type.PrivateKey.from_human!()
+  @private_key @private_key_human |> PrivateKey.from_human!()
   @to_address_human "0x38f153fdd399ff2cf64704c6a4b16d3fd9ddcd69"
-  @to_address @to_address_human |> TTEth.Type.Address.from_human!()
+  @to_address @to_address_human |> Address.from_human!()
   # transfer(address,uint256)
   @tx_data_human "a9059cbb00000000000000000000000038f153fdd399ff2cf64704c6a4b16d3fd9ddcd69000000000000000000000000000000000000000000000000000000000000000a"
   @tx_data @tx_data_human |> Base.decode16!(case: :lower)
@@ -58,6 +59,46 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
       |> encode_and_pad()
       |> assert_match(@valid_transaction_data)
     end
+
+    test "from address is correct when checking signature", %{trx: trx} do
+      # Build the trx_data but randomize the nonce.
+      built_trx_data =
+        %{trx | nonce: Enum.random(10..100)}
+        |> EIP1559Transaction.build(@private_key)
+        |> encode_and_pad()
+
+      # Decode the transaction data.
+      decoded = built_trx_data |> fully_decode_trx_data()
+
+      # Get signature params.
+      [y_parity, r, s] = decoded |> Enum.take(_signature_params = -3)
+
+      # Get the raw public key from the signature.
+      {:ok, public_raw} =
+        decoded
+        |> Enum.take(_everything_but_the_signature = 9)
+        |> ExRLP.encode()
+        |> put_trx_envelope()
+        |> TTEth.keccak()
+        |> TTEth.Secp256k1.ecdsa_recover_compact(
+          _signature = r <> s,
+          _recovery_id = y_parity |> :binary.decode_unsigned()
+        )
+
+      # Get the formatted public key from the private key.
+      original_public_key =
+        @private_key_human
+        |> PrivateKey.from_human!()
+        |> PublicKey.from_private_key!()
+        |> Address.from_public_key!()
+        |> Address.encode_eth_address!()
+
+      # Attempt to match the public key from the signature with the private key's public key.
+      public_raw
+      |> Address.from_public_key!()
+      |> Address.encode_eth_address!()
+      |> assert_match(^original_public_key)
+    end
   end
 
   ## Private.
@@ -82,5 +123,18 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
     do:
       bin
       |> Base.encode16(case: :lower)
-      |> (&("0x" <> &1)).()
+      |> TTEth.hex_prefix!()
+
+  # Decode the hex encoded transaction.
+  defp fully_decode_trx_data("0x" <> data),
+    do:
+      data
+      |> Base.decode16!(case: :lower)
+      |> :binary.bin_to_list()
+      |> Enum.drop(_drop_transaction_envelope = 1)
+      |> :binary.list_to_bin()
+      |> ExRLP.decode()
+
+  defp put_trx_envelope(data),
+    do: <<2>> <> data
 end
