@@ -58,8 +58,8 @@ defmodule TTEth.ChainClient do
     do: tx_obj |> HttpClient.eth_estimate_gas(opts)
 
   @impl ChainClient
-  def eth_get_block_by_number("" <> block, transaction_detail \\ false),
-    do: block |> HttpClient.eth_get_block_by_number(transaction_detail)
+  def eth_get_block_by_number("" <> block, tx_detail \\ false),
+    do: block |> HttpClient.eth_get_block_by_number(tx_detail)
 
   ## Helpers outside of the ChainClient behaviour.
 

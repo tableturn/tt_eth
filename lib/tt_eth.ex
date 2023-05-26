@@ -95,10 +95,13 @@ defmodule TTEth do
     do: tx_obj |> chain_client().eth_estimate_gas(opts)
 
   @doc """
-  Delegate to `TTEth.ChainClient.eth_get_block/1+2`.
+  Delegate to `TTEth.ChainClient.eth_get_block/1+2`
+
+  `tx_detail` flag set to false to mirror RPC call:
+  SEE: https://www.quicknode.com/docs/ethereum/eth_getBlockByNumber.
   """
-  def get_block_by_number("" <> block, opts \\ []),
-    do: block |> chain_client().eth_get_block_by_number(opts)
+  def get_block_by_number("" <> block, tx_detail \\ false),
+    do: block |> chain_client().eth_get_block_by_number(tx_detail)
 
   ## Dependencies / Injection.
 
