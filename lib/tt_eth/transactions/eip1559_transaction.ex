@@ -25,9 +25,6 @@ defmodule TTEth.Transactions.EIP1559Transaction do
             init: <<>>,
             data: <<>>
 
-  # Base recovery V minimum.
-  @base_recovery_id 27
-
   # The transaction envelope version for an EIP-1559 transaction.
   # SEE: https://eips.ethereum.org/EIPS/eip-2718
   # SEE: https://eips.ethereum.org/EIPS/eip-1559
@@ -94,7 +91,7 @@ defmodule TTEth.Transactions.EIP1559Transaction do
   def sign_hash(hash, private_key) do
     {:ok, {<<r::size(256), s::size(256)>>, v}} = Secp256k1.ecdsa_sign_compact(hash, private_key)
 
-    {v |> v_to_parity(), r, s}
+    {v, r, s}
   end
 
   @doc """
@@ -128,10 +125,6 @@ defmodule TTEth.Transactions.EIP1559Transaction do
     do: <<trx.type>> <> encoded
 
   ## Private.
-
-  # Converts the `v` value to a parity value.
-  defp v_to_parity(@base_recovery_id), do: 0
-  defp v_to_parity(_), do: 1
 
   # Optionally add the YRS values.
   defp maybe_add_yrs(base, %__MODULE__{} = trx, _include_vrs = true),
