@@ -43,6 +43,6 @@ defmodule TTEth.ChainClientMockImpl do
     do: {:ok, "0x5208"}
 
   @impl ChainClient
-  def eth_get_block_by_number(_block, _opts \\ []),
+  def eth_get_block_by_number(_block, _tx_detail \\ false),
     do: {:ok, %{"number" => "0x1", "baseFeePerGas" => "0x10"}}
 end

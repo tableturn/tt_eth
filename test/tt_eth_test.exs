@@ -174,9 +174,9 @@ defmodule TTEthTest do
     test "delegates to `ChainClient.eth_get_block_by_number/1+2`" do
       ChainClientMock
       # We want to make sure that the chain client is called to get the max priority fee.
-      |> expect(:eth_get_block_by_number, fn block_, opts_ ->
+      |> expect(:eth_get_block_by_number, fn block_, tx_detail_ ->
         assert block_ == "pending"
-        assert opts_ == []
+        assert tx_detail_ == false
 
         {:ok, %{"baseFeePerGas" => "0x10"}}
       end)
