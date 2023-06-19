@@ -30,7 +30,7 @@ defmodule TTEth.MixProject do
       {:faker, "~> 0.13", only: [:dev, :test]},
       {:hammox, "~> 0.7.0", only: [:test]},
       {:ecto, "~> 3.5"},
-      {:ex_secp256k1, "~> 0.5"},
+      {:ex_secp256k1, "~> 0.7"},
       {:eip_55, "~> 0.1"},
       {:ethereumex, "~> 0.10.0"},
       {:ex_keccak, "~> 0.2"},
