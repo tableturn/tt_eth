@@ -38,6 +38,10 @@ defmodule TTEth.ChainClient do
     do: address |> HttpClient.eth_get_transaction_count(block, opts)
 
   @impl ChainClient
+  def eth_get_logs(params, opts \\ []),
+    do: params |> HttpClient.eth_get_logs(opts)
+
+  @impl ChainClient
   def eth_new_filter(params, opts \\ []),
     do: params |> HttpClient.eth_new_filter(opts)
 
