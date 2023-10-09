@@ -23,6 +23,10 @@ defmodule TTEth.ChainClientMockImpl do
     do: {:ok, "0x42"}
 
   @impl ChainClient
+  def eth_get_logs(_params, _opts \\ []),
+    do: {:error, :not_found}
+
+  @impl ChainClient
   def eth_new_filter(_params, _opts \\ []),
     do: :error
 

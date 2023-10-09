@@ -29,6 +29,9 @@ defmodule TTEth.Behaviours.ChainClient do
   @callback eth_get_transaction_count(account :: address, block_id) :: any
   @callback eth_get_transaction_count(account :: address, block_id, opts) :: any
 
+  @callback eth_get_logs(filter_params) :: {:ok, any} | {:error, any}
+  @callback eth_get_logs(filter_params, opts) :: {:ok, any} | {:error, any}
+
   @callback eth_new_filter(filter_params) :: any
   @callback eth_new_filter(filter_params, opts) :: any
 
