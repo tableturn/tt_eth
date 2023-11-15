@@ -123,6 +123,10 @@ defmodule TTEth do
   def transaction_module(),
     do: :tt_eth |> get_env(:transaction_module, TTEth.Transactions.EIP1559Transaction)
 
+  @spec signer_module() :: module
+  def signer_module(),
+    do: :tt_eth |> get_env(:signer_module, TTEth.Secp256k1)
+
   ## Mocks related stuff.
 
   @doc false

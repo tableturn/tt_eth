@@ -3,6 +3,12 @@ defmodule TTEth.Secp256k1 do
   Wrapper around `ExSecp256k1` functions.
   """
 
+  @behaviour TTEth.Behaviours.Signer
+
+  @impl TTEth.Behaviours.Signer
+  def sign_transaction(transaction, private_key),
+    do: ecdsa_sign_compact(transaction, private_key)
+
   @doc """
   Delegates to `ExSecp256k1.recover_compact/3` with guards around the `recovery_id` value.
   """

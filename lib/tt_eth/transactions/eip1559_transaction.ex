@@ -4,9 +4,10 @@ defmodule TTEth.Transactions.EIP1559Transaction do
 
   SEE: https://eips.ethereum.org/EIPS/eip-1559
   """
-  alias TTEth.{BitHelper, Secp256k1}
+  alias TTEth.BitHelper
   alias TTEth.Behaviours.Transaction
   import BitHelper, only: [encode_unsigned: 1]
+  import TTEth, only: [signer_module: 0]
 
   @behaviour Transaction
 
@@ -89,7 +90,8 @@ defmodule TTEth.Transactions.EIP1559Transaction do
   Returns a ECDSA signature (v,r,s) for a given hashed value.
   """
   def sign_hash(hash, private_key) do
-    {:ok, {<<r::size(256), s::size(256)>>, v}} = Secp256k1.ecdsa_sign_compact(hash, private_key)
+    {:ok, {<<r::size(256), s::size(256)>>, v}} =
+      signer_module().sign_transaction(hash, private_key)
 
     {v, r, s}
   end

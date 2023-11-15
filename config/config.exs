@@ -10,4 +10,5 @@ config :tt_eth,
     secondary: "0xe2187dc017e880dded10c403f7c0d397afb11736ac027c1202e318b0dd345086",
     ternary: "0xfa015243f2e6d8694ab037a7987dc73b1630fc8cb1ce82860344684c15d24026"
   ],
-  transaction_module: TTEth.Transactions.LegacyTransaction
+  transaction_module: TTEth.Transactions.LegacyTransaction,
+  signer_module: TTEth.Secp256k1
