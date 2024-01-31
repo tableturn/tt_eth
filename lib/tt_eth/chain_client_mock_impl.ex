@@ -3,6 +3,7 @@ defmodule TTEth.ChainClientMockImpl do
   Implementation default for tests.
   """
   alias TTEth.Behaviours.ChainClient
+  alias TTEth.Wallet
 
   @behaviour ChainClient
 
@@ -15,8 +16,8 @@ defmodule TTEth.ChainClientMockImpl do
     do: :error
 
   @impl ChainClient
-  def build_tx_data(to, abi_data, private_key, nonce, opts \\ []),
-    do: to |> TTEth.ChainClient.build_tx_data(abi_data, private_key, nonce, opts)
+  def build_tx_data(to, abi_data, %Wallet{} = wallet, nonce, opts \\ []),
+    do: to |> TTEth.ChainClient.build_tx_data(abi_data, wallet, nonce, opts)
 
   @impl ChainClient
   def eth_get_transaction_count(_address, _block \\ "latest", _opts \\ []),

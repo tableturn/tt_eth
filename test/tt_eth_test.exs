@@ -59,18 +59,16 @@ defmodule TTEthTest do
 
       tx_data =
         to
-        |> TTEth.ChainClient.build_tx_data(abi_data, wallet.private_key, nonce_dec,
-          chain_id: @chain_id
-        )
+        |> TTEth.ChainClient.build_tx_data(abi_data, wallet, nonce_dec, chain_id: @chain_id)
 
       ChainClientMock
       # We don't care about this in this test.
       |> expect(:eth_get_transaction_count, fn _, _ -> {:ok, nonce_hex} end)
       # We want to make sure that the transaction building function was called with the correct params.
-      |> expect(:build_tx_data, fn to_, abi_data_, private_key_, nonce_, opts_ ->
+      |> expect(:build_tx_data, fn to_, abi_data_, wallet_, nonce_, opts_ ->
         assert to_ == to
         assert abi_data == abi_data_
-        assert private_key_ == wallet.private_key
+        assert wallet_ == wallet
         assert nonce_ == nonce_dec
         assert opts_ == [chain_id: @chain_id]
         tx_data
