@@ -6,7 +6,7 @@ defmodule TTEth.Behaviours.ChainClient do
   """
 
   @type address :: TTEth.Type.Address.t()
-  @type private_key :: TTEth.Type.PrivateKey.t()
+  @type wallet :: TTEth.Wallet.t()
   @type encoded_args :: binary
   @type opts :: keyword
   @type nonce :: non_neg_integer()
@@ -23,8 +23,8 @@ defmodule TTEth.Behaviours.ChainClient do
   @callback eth_send_raw_transaction(tx_data) :: any
   @callback eth_send_raw_transaction(tx_data, opts) :: any
 
-  @callback build_tx_data(address, abi_data, private_key, nonce) :: tx_data
-  @callback build_tx_data(address, abi_data, private_key, nonce, keyword) :: tx_data
+  @callback build_tx_data(address, abi_data, wallet, nonce) :: tx_data
+  @callback build_tx_data(address, abi_data, wallet, nonce, keyword) :: tx_data
 
   @callback eth_get_transaction_count(account :: address, block_id) :: any
   @callback eth_get_transaction_count(account :: address, block_id, opts) :: any

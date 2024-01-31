@@ -5,6 +5,7 @@ defmodule TTEth.ChainClient do
   This is agnostic to the transaction version/type.
   """
   alias TTEth.Behaviours.ChainClient
+  alias TTEth.Wallet
   alias Ethereumex.HttpClient
   import TTEth, only: [transaction_module: 0, hex_prefix!: 1]
 
@@ -24,12 +25,12 @@ defmodule TTEth.ChainClient do
 
   # Delegate to the transaction module to serialize and sign the transaction.
   @impl ChainClient
-  def build_tx_data("" <> to_address, abi_data, private_key, nonce, opts \\ [])
+  def build_tx_data("" <> to_address, abi_data, %Wallet{} = wallet, nonce, opts \\ [])
       when is_integer(nonce),
       do:
         to_address
         |> transaction_module().new(abi_data, nonce, opts)
-        |> transaction_module().build(private_key)
+        |> transaction_module().build(wallet)
         |> Base.encode16(case: :lower)
         |> hex_prefix!()
 

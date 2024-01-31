@@ -69,16 +69,15 @@ defmodule TTEth do
 
   @doc "Builds the tx data using the configured `TTEth.ChainClient`."
   def build_tx_data(%Wallet{} = wallet, to, method, args, opts \\ []) do
-    with {_, %{private_key: private_key, human_address: human_address}} <-
-           {:wallet, wallet},
-         {_, {:ok, "0x" <> raw_nonce}} <-
-           {:raw_nonce, human_address |> chain_client().eth_get_transaction_count("pending")},
+    with {_, {:ok, "0x" <> raw_nonce}} <-
+           {:raw_nonce,
+            wallet.human_address |> chain_client().eth_get_transaction_count("pending")},
          {_, {nonce, ""}} <-
            {:parse_nonce, raw_nonce |> Integer.parse(16)},
          {_, abi_data} <-
            {:abi_encode, method |> ABI.encode(args)} do
       to
-      |> chain_client().build_tx_data(abi_data, private_key, nonce, opts)
+      |> chain_client().build_tx_data(abi_data, wallet, nonce, opts)
     end
   end
 
