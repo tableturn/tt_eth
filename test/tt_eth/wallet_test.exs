@@ -1,5 +1,6 @@
 defmodule TTEth.WalletTest do
   use TTEth.Case, async: true
+  alias TTEth.LocalWallet
 
   @human_private_key "0xfa015243f2e6d8694ab037a7987dc73b1630fc8cb1ce82860344684c15d24026"
 
@@ -25,13 +26,6 @@ defmodule TTEth.WalletTest do
       |> Wallet.from_private_key()
       |> assert_match_ternary_wallet()
     end
-
-    test "reconstructs everything from a binary private key" do
-      @human_private_key
-      |> TTEth.Type.PrivateKey.from_human!()
-      |> Wallet.from_private_key()
-      |> assert_match_ternary_wallet()
-    end
   end
 
   describe "new/0+1" do
@@ -40,7 +34,7 @@ defmodule TTEth.WalletTest do
     end
 
     test "generates a wallet deterministically given a keypair" do
-      kp = TTEth.new_keypair()
+      kp = LocalWallet.generate()
       assert Wallet.new(kp) == Wallet.new(kp)
     end
   end
@@ -48,9 +42,10 @@ defmodule TTEth.WalletTest do
   ## Private.
 
   defp assert_match_ternary_wallet(wallet) do
-    private_key = @human_private_key |> TTEth.Type.PrivateKey.from_human!()
     human_address = "0x0aF6b8a8E5D56F0ab74D47Ac446EEa46817F32bC"
     address = human_address |> TTEth.Type.Address.from_human!()
+
+    private_key = @human_private_key |> TTEth.Type.PrivateKey.from_human!()
 
     human_public_key =
       "0x58be6efb58e39ce4b5d1ca552d80f8c9009dfecec0e5a31fc8d22ee866320c506be5" <>
@@ -60,12 +55,15 @@ defmodule TTEth.WalletTest do
 
     wallet
     |> assert_match(%Wallet{
-      human_address: ^human_address,
-      human_private_key: @human_private_key,
-      human_public_key: ^human_public_key,
+      adapter: LocalWallet,
       address: ^address,
-      private_key: ^private_key,
-      public_key: ^public_key
+      public_key: ^public_key,
+      human_address: ^human_address,
+      human_public_key: ^human_public_key,
+      _adapter: %LocalWallet{
+        private_key: ^private_key,
+        human_private_key: @human_private_key
+      }
     })
   end
 end
