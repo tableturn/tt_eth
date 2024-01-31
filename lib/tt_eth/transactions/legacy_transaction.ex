@@ -4,7 +4,6 @@ defmodule TTEth.Transactions.LegacyTransaction do
   """
   alias TTEth.{BitHelper, Wallet}
   alias TTEth.Behaviours.Transaction
-  alias TTEth.Type.Signature, as: EthSignature
   import BitHelper, only: [encode_unsigned: 1]
 
   @behaviour Transaction
@@ -16,6 +15,9 @@ defmodule TTEth.Transactions.LegacyTransaction do
   @type val :: integer()
   @type address :: <<_::160>>
   @type hash :: <<_::256>>
+
+  @base_v 27
+  @base_v_eip_155 35
 
   @type t :: %__MODULE__{
           nonce: integer(),
@@ -140,11 +142,13 @@ defmodule TTEth.Transactions.LegacyTransaction do
   """
   @spec sign_hash(BitHelper.keccak_hash(), Wallet.t(), integer() | nil) ::
           {hash_v, hash_r, hash_s}
-  def sign_hash(hash, %Wallet{} = wallet, chain_id \\ nil),
-    do:
+  def sign_hash(hash, %Wallet{} = wallet, chain_id \\ nil) do
+    {:ok, {<<r::size(256), s::size(256)>>, recovery_id}} =
       wallet
       |> Wallet.sign(hash)
-      |> EthSignature.compact_to_components!(chain_id)
+
+    {recovery_id |> recovery_id_to_v(chain_id), r, s}
+  end
 
   @doc """
   Returns a hash of a given transaction according to the
@@ -200,4 +204,12 @@ defmodule TTEth.Transactions.LegacyTransaction do
 
     %{trx | v: v, r: r, s: s}
   end
+
+  ## Private.
+
+  defp recovery_id_to_v(recovery_id, _chain_id = nil),
+    do: @base_v + recovery_id
+
+  defp recovery_id_to_v(recovery_id, chain_id) when is_integer(chain_id),
+    do: chain_id * 2 + @base_v_eip_155 + recovery_id
 end

@@ -3,12 +3,14 @@ defmodule TTEth.Secp256k1 do
   Wrapper around `ExSecp256k1` functions.
   """
 
+  @valid_recovery_ids [0, 1]
+
   @doc """
   Delegates to `ExSecp256k1.recover_compact/3` with guards around the `recovery_id` value.
   """
   @spec ecdsa_recover_compact(binary(), binary(), non_neg_integer()) ::
           {:ok, binary()} | {:error, atom()}
-  def ecdsa_recover_compact(hash, sig, recovery_id) when recovery_id in [0, 1],
+  def ecdsa_recover_compact(hash, sig, recovery_id) when recovery_id in @valid_recovery_ids,
     do: ExSecp256k1.recover_compact(hash, sig, recovery_id)
 
   def ecdsa_recover_compact(_hash, _sig, _recovery_id),
