@@ -9,9 +9,9 @@ defmodule TTEth.Behaviours.Transaction do
   @type opts :: Keyword.t()
 
   @type transaction :: struct()
-  @type private_key :: binary()
+  @type wallet :: TTEth.Wallet.t()
 
   @callback new(to_address, abi_data, nonce, opts) :: transaction
 
-  @callback build(transaction, private_key) :: binary()
+  @callback build(transaction, wallet) :: binary()
 end
