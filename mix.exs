@@ -40,6 +40,18 @@ defmodule TTEth.MixProject do
 
   defp groups_for_modules(),
     do: [
+      "Transactions Types": [
+        TTEth.Transactions.LegacyTransaction,
+        TTEth.Transactions.EIP1559Transaction
+      ],
+      Behaviours: [
+        TTEth.Behaviours.ChainClient,
+        TTEth.Behaviours.Transaction,
+        TTEth.Behaviours.Wallet
+      ],
+      Protocols: [
+        TTEth.Protocols.Wallet
+      ],
       Types: [
         TTEth.Type.Address,
         TTEth.Type.Hash,
