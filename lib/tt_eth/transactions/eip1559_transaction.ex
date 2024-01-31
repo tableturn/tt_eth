@@ -4,7 +4,7 @@ defmodule TTEth.Transactions.EIP1559Transaction do
 
   SEE: https://eips.ethereum.org/EIPS/eip-1559
   """
-  alias TTEth.{BitHelper, Secp256k1}
+  alias TTEth.{BitHelper, Wallet}
   alias TTEth.Behaviours.Transaction
   import BitHelper, only: [encode_unsigned: 1]
 
@@ -53,24 +53,22 @@ defmodule TTEth.Transactions.EIP1559Transaction do
   This will return a binary which can then be base16 encoded etc.
   """
   @impl Transaction
-  def build(%__MODULE__{} = trx, private_key),
+  def build(%__MODULE__{} = trx, %Wallet{} = wallet),
     do:
       trx
-      |> sign_transaction(private_key)
+      |> sign_transaction(wallet)
       |> serialize(_include_signature = true)
       |> rlp_encode()
       |> put_transaction_envelope(trx)
 
-  @doc """
-  Delegate to ExRLP to RLP encode values.
-  """
-  def rlp_encode(data),
+  ## Private.
+
+  # Delegate to ExRLP to RLP encode values.
+  defp rlp_encode(data),
     do: data |> ExRLP.encode()
 
-  @doc """
-  Encodes a transaction such that it can be RLP-encoded.
-  """
-  def serialize(%__MODULE__{} = trx, include_vrs \\ true),
+  # Encodes a transaction such that it can be RLP-encoded.
+  defp serialize(%__MODULE__{} = trx, include_vrs),
     do:
       [
         trx.chain_id |> encode_unsigned(),
@@ -85,19 +83,8 @@ defmodule TTEth.Transactions.EIP1559Transaction do
       ]
       |> maybe_add_yrs(trx, include_vrs)
 
-  @doc """
-  Returns a ECDSA signature (v,r,s) for a given hashed value.
-  """
-  def sign_hash(hash, private_key) do
-    {:ok, {<<r::size(256), s::size(256)>>, v}} = Secp256k1.ecdsa_sign_compact(hash, private_key)
-
-    {v, r, s}
-  end
-
-  @doc """
-  Returns a hash of a given transaction.
-  """
-  def transaction_hash(%__MODULE__{} = trx),
+  # Returns a hash of a given transaction.
+  defp transaction_hash(%__MODULE__{} = trx),
     do:
       trx
       |> serialize(_include_signature = false)
@@ -105,28 +92,21 @@ defmodule TTEth.Transactions.EIP1559Transaction do
       |> put_transaction_envelope(trx)
       |> TTEth.keccak()
 
-  @doc """
-  Takes a given transaction and returns a version signed with the given private key.
-  """
-  def sign_transaction(%__MODULE__{} = trx, private_key) when is_binary(private_key) do
-    {y_parity, r, s} =
-      trx
-      |> transaction_hash()
-      |> sign_hash(private_key)
+  # Takes a given transaction and returns a version signed with the given private key.
+  defp sign_transaction(%__MODULE__{} = trx, %Wallet{} = wallet) do
+    {:ok, {<<r::size(256), s::size(256)>>, y_parity}} =
+      wallet
+      |> Wallet.sign(trx |> transaction_hash())
 
-    %{trx | y_parity: y_parity, r: r, s: s}
+    %{trx | r: r, s: s, y_parity: y_parity}
   end
 
-  @doc """
-  Wraps the RLP encoded transaction in a transaction envelope.
-  SEE: https://eips.ethereum.org/EIPS/eip-2718
-  """
-  def put_transaction_envelope(encoded, %__MODULE__{} = trx) when is_binary(encoded),
+  # Wraps the RLP encoded transaction in a transaction envelope.
+  # SEE: https://eips.ethereum.org/EIPS/eip-2718
+  defp put_transaction_envelope(encoded, %__MODULE__{} = trx) when is_binary(encoded),
     do: <<trx.type>> <> encoded
 
-  ## Private.
-
-  # Optionally add the YRS values.
+  # Maybe add the y_parity, r and s values.
   defp maybe_add_yrs(base, %__MODULE__{} = trx, _include_vrs = true),
     do:
       base ++
@@ -136,5 +116,6 @@ defmodule TTEth.Transactions.EIP1559Transaction do
           trx.s |> encode_unsigned()
         ]
 
-  defp maybe_add_yrs(base, %__MODULE__{}, _dont_include_vrs), do: base
+  defp maybe_add_yrs(base, %__MODULE__{}, _dont_include_vrs),
+    do: base
 end

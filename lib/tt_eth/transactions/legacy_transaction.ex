@@ -2,12 +2,12 @@ defmodule TTEth.Transactions.LegacyTransaction do
   @moduledoc """
   Ported from [`Blockchain`](https://hex.pm/packages/blockchain).
   """
-  alias TTEth.{BitHelper, Secp256k1}
+  alias TTEth.{BitHelper, Wallet}
   alias TTEth.Behaviours.Transaction
+  alias TTEth.Type.Signature, as: EthSignature
+  import BitHelper, only: [encode_unsigned: 1]
 
   @behaviour Transaction
-
-  @type private_key :: <<_::256>>
 
   @type hash_v :: integer()
   @type hash_r :: integer()
@@ -43,10 +43,6 @@ defmodule TTEth.Transactions.LegacyTransaction do
             init: <<>>,
             data: <<>>
 
-  # The follow are the maximum value for x in the signature, as defined in Eq.(212)
-  @base_recovery_id 27
-  @base_recovery_id_eip_155 35
-
   @impl Transaction
   def new("" <> to_address, abi_data, nonce, opts) when is_integer(nonce),
     do: %__MODULE__{
@@ -60,10 +56,10 @@ defmodule TTEth.Transactions.LegacyTransaction do
     }
 
   @impl Transaction
-  def build(%__MODULE__{} = trx, private_key),
+  def build(%__MODULE__{} = trx, %Wallet{} = wallet),
     do:
       trx
-      |> sign_transaction(private_key)
+      |> sign_transaction(wallet)
       |> serialize(_include_signature = true)
       |> rlp_encode()
 
@@ -95,20 +91,20 @@ defmodule TTEth.Transactions.LegacyTransaction do
   @spec serialize(t) :: ExRLP.t()
   def serialize(trx, include_vrs \\ true) do
     base = [
-      trx.nonce |> BitHelper.encode_unsigned(),
-      trx.gas_price |> BitHelper.encode_unsigned(),
-      trx.gas_limit |> BitHelper.encode_unsigned(),
+      trx.nonce |> encode_unsigned(),
+      trx.gas_price |> encode_unsigned(),
+      trx.gas_limit |> encode_unsigned(),
       trx.to,
-      trx.value |> BitHelper.encode_unsigned(),
+      trx.value |> encode_unsigned(),
       if(trx.to == <<>>, do: trx.init, else: trx.data)
     ]
 
     if include_vrs do
       base ++
         [
-          trx.v |> BitHelper.encode_unsigned(),
-          trx.r |> BitHelper.encode_unsigned(),
-          trx.s |> BitHelper.encode_unsigned()
+          trx.v |> encode_unsigned(),
+          trx.r |> encode_unsigned(),
+          trx.s |> encode_unsigned()
         ]
     else
       base
@@ -122,12 +118,14 @@ defmodule TTEth.Transactions.LegacyTransaction do
 
   ## Examples
 
-      iex> LegacyTransaction.sign_hash(<<2::256>>, <<1::256>>)
+      iex> wallet = TTEth.Wallet.from_private_key(_private_key = <<1::256>>)
+      iex> LegacyTransaction.sign_hash(<<2::256>>, wallet)
       {28,
       38938543279057362855969661240129897219713373336787331739561340553100525404231,
       23772455091703794797226342343520955590158385983376086035257995824653222457926}
 
-      iex> LegacyTransaction.sign_hash(<<5::256>>, <<1::256>>)
+      iex> wallet = TTEth.Wallet.from_private_key(_private_key = <<1::256>>)
+      iex> LegacyTransaction.sign_hash(<<5::256>>, wallet)
       {27,
       74927840775756275467012999236208995857356645681540064312847180029125478834483,
       56037731387691402801139111075060162264934372456622294904359821823785637523849}
@@ -135,26 +133,18 @@ defmodule TTEth.Transactions.LegacyTransaction do
       iex> data = "ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080" |> TTEth.BitHelper.from_hex
       iex> hash = data |> TTEth.keccak()
       iex> private_key = "4646464646464646464646464646464646464646464646464646464646464646" |> TTEth.BitHelper.from_hex
-      iex> LegacyTransaction.sign_hash(hash, private_key, 1)
+      iex> wallet = TTEth.Wallet.from_private_key(private_key)
+      iex> LegacyTransaction.sign_hash(hash, wallet, 1)
       { 37, 18515461264373351373200002665853028612451056578545711640558177340181847433846, 46948507304638947509940763649030358759909902576025900602547168820602576006531 }
 
   """
-  @spec sign_hash(BitHelper.keccak_hash(), private_key, integer() | nil) ::
+  @spec sign_hash(BitHelper.keccak_hash(), Wallet.t(), integer() | nil) ::
           {hash_v, hash_r, hash_s}
-  def sign_hash(hash, private_key, chain_id \\ nil) do
-    {:ok, {<<r::size(256), s::size(256)>>, recovery_id}} =
-      Secp256k1.ecdsa_sign_compact(hash, private_key)
-
-    # Fork Ψ EIP-155
-    recovery_id =
-      if chain_id do
-        chain_id * 2 + @base_recovery_id_eip_155 + recovery_id
-      else
-        @base_recovery_id + recovery_id
-      end
-
-    {recovery_id, r, s}
-  end
+  def sign_hash(hash, %Wallet{} = wallet, chain_id \\ nil),
+    do:
+      wallet
+      |> Wallet.sign(hash)
+      |> EthSignature.compact_to_components!(chain_id)
 
   @doc """
   Returns a hash of a given transaction according to the
@@ -192,19 +182,21 @@ defmodule TTEth.Transactions.LegacyTransaction do
 
   ## Examples
 
-      iex> LegacyTransaction.sign_transaction(%LegacyTransaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<>>, value: 5, init: <<1>>}, <<1::256>>)
+      iex> wallet = TTEth.Wallet.from_private_key(_private_key = <<1::256>>)
+      iex> LegacyTransaction.sign_transaction(%LegacyTransaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<>>, value: 5, init: <<1>>}, wallet)
       %LegacyTransaction{data: <<>>, gas_limit: 7, gas_price: 6, init: <<1>>, nonce: 5, r: 97037709922803580267279977200525583527127616719646548867384185721164615918250, s: 31446571475787755537574189222065166628755695553801403547291726929250860527755, to: "", v: 27, value: 5}
 
-      iex> LegacyTransaction.sign_transaction(%LegacyTransaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<>>, value: 5, init: <<1>>}, <<1::256>>, 1)
+      iex> wallet = TTEth.Wallet.from_private_key(_private_key = <<1::256>>)
+      iex> LegacyTransaction.sign_transaction(%LegacyTransaction{nonce: 5, gas_price: 6, gas_limit: 7, to: <<>>, value: 5, init: <<1>>}, wallet, 1)
       %LegacyTransaction{data: <<>>, gas_limit: 7, gas_price: 6, init: <<1>>, nonce: 5, r: 25739987953128435966549144317523422635562973654702886626580606913510283002553, s: 41423569377768420285000144846773344478964141018753766296386430811329935846420, to: "", v: 38, value: 5}
 
   """
-  @spec sign_transaction(__MODULE__.t(), private_key, integer() | nil) :: __MODULE__.t()
-  def sign_transaction(trx, private_key, chain_id \\ nil) do
+  @spec sign_transaction(__MODULE__.t(), Wallet.t(), integer() | nil) :: __MODULE__.t()
+  def sign_transaction(trx, %Wallet{} = wallet, chain_id \\ nil) do
     {v, r, s} =
       trx
       |> transaction_hash(chain_id)
-      |> sign_hash(private_key, chain_id)
+      |> sign_hash(wallet, chain_id)
 
     %{trx | v: v, r: r, s: s}
   end

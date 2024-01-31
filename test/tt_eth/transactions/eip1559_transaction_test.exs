@@ -2,12 +2,12 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
   use TTEth.Case
   alias TTEth.Transactions.EIP1559Transaction
   alias TTEth.Type.{Address, PrivateKey, PublicKey}
+  alias TTEth.Wallet
 
   # Polygon Mumbai.
   @chain_id 80001
 
   @private_key_human "0x62aa6ec41b56439d2c5df352c45a00389cef262b3761e13c6481e35ab027d262"
-  @private_key @private_key_human |> PrivateKey.from_human!()
   @to_address_human "0x38f153fdd399ff2cf64704c6a4b16d3fd9ddcd69"
   @to_address @to_address_human |> Address.from_human!()
   # transfer(address,uint256)
@@ -51,20 +51,23 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
   end
 
   describe "build/2" do
-    setup :build_trx
+    setup [
+      :build_trx,
+      :build_wallet
+    ]
 
-    test "builds a signed transaction", %{trx: trx} do
+    test "builds a signed transaction", %{trx: trx, wallet: wallet} do
       trx
-      |> EIP1559Transaction.build(@private_key)
+      |> EIP1559Transaction.build(wallet)
       |> encode_and_pad()
       |> assert_match(@valid_transaction_data)
     end
 
-    test "from address is correct when checking signature", %{trx: trx} do
+    test "from address is correct when checking signature", %{trx: trx, wallet: wallet} do
       # Build the trx_data but randomize the nonce.
       built_trx_data =
         %{trx | nonce: Enum.random(10..100)}
-        |> EIP1559Transaction.build(@private_key)
+        |> EIP1559Transaction.build(wallet)
         |> encode_and_pad()
 
       # Decode the transaction data.
@@ -116,6 +119,9 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
         value: 0
       }
     }
+
+  defp build_wallet(_),
+    do: %{wallet: @private_key_human |> Wallet.from_private_key()}
 
   ## Helpers.
 
