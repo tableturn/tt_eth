@@ -6,20 +6,31 @@ on: push
 jobs:
   test:
     name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    runs-on: "ubuntu-20.04"
     strategy:
       matrix:
-        otp: ['22.x', '24.x']
-        elixir: ['1.11.4', '1.13.4']
-    runs-on: ubuntu-20.04
+        otp: ["22.x", "24.x", "25.x"]
+        elixir: ["1.11.4", "1.13.4", "1.14.5"]
+        exclude:
+          - otp: "25.x"
+            elixir: "1.11.4"
+          - otp: "22.x"
+            elixir: "1.14.5"
+          - otp: "24.x"
+            elixir: "1.14.5"
 
     steps:
-      - uses: actions/checkout@v2
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
       - name: "Setup Elixir / Erlang"
         uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
+
       - name: "Get the deps"
         run: mix deps.get
+
       - name: "Run the tests"
         run: mix test
