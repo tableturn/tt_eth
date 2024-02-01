@@ -39,6 +39,62 @@ defmodule TTEth.WalletTest do
     end
   end
 
+  describe "sign/2" do
+    setup :build_wallet
+
+    test "given a wallet and digest, signs the digest", %{wallet: wallet} do
+      wallet
+      |> Wallet.sign("some plaintext" |> TTEth.keccak())
+      |> assert_match({:ok, {<<_signature::512>>, recovery_id}} when recovery_id in [0, 1])
+    end
+
+    test "returns an error tuple if a failure happens", %{wallet: wallet} do
+      wallet
+      |> Wallet.sign("some plaintext")
+      |> assert_equal({:error, :wrong_message_size})
+    end
+  end
+
+  describe "sign!/2" do
+    setup :build_wallet
+
+    test "same as sign/2", %{wallet: wallet} do
+      digest = "some plaintext" |> TTEth.keccak()
+
+      {:ok, compact_signature} =
+        wallet
+        |> Wallet.sign(digest)
+
+      wallet
+      |> Wallet.sign!(digest)
+      |> assert_match(^compact_signature)
+    end
+  end
+
+  describe "personal_sign/2" do
+    setup :build_wallet
+
+    test "signs a plaintext using the EIP-191 standard", %{wallet: wallet} do
+      wallet
+      |> Wallet.personal_sign("some plaintext")
+      |> assert_match({:ok, {v, _r, _s}} when v in [27, 28])
+    end
+  end
+
+  describe "personal_sign!/2" do
+    setup :build_wallet
+
+    test "same as personal_sign/2", %{wallet: wallet} do
+      {:ok, components} =
+        wallet
+        |> Wallet.personal_sign("some plaintext")
+
+      wallet
+      |> Wallet.personal_sign!("some plaintext")
+      |> assert_match(^components)
+    end
+  end
+
   ## Private.
 
   defp assert_match_ternary_wallet(wallet) do
@@ -65,4 +121,7 @@ defmodule TTEth.WalletTest do
       }
     })
   end
+
+  defp build_wallet(_),
+    do: %{wallet: Wallet.new()}
 end

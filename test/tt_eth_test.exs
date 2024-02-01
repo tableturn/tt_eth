@@ -3,7 +3,7 @@ defmodule TTEthTest do
   import TTEth, only: [binary_to_hex!: 1]
   doctest TTEth, import: true
 
-  @chain_id 12345
+  @chain_id 12_345
 
   describe "new_keypair/0" do
     test "generates a public and private key" do
