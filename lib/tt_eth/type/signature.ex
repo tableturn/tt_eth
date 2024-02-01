@@ -6,13 +6,12 @@ defmodule TTEth.Type.Signature do
   alias TTEth.{BitHelper, Secp256k1}
   import TTEth, only: [keccak: 1]
 
-  @secp256k1n 115_792_089_237_316_195_423_570_985_008_687_907_852_837_564_279_074_904_382_605_163_141_518_161_494_337
-  @secp256k1n_2 round(Float.floor(@secp256k1n / 2))
   @base_v 27
+  @valid_vs [@base_v, @base_v + 1]
   @ethereum_magic <<0x19, "Ethereum Signed Message:", ?\n>>
 
   @type recovery_id :: non_neg_integer()
-  @type v :: non_neg_integer()
+  @type v :: 27 | 28
   @type r :: non_neg_integer()
   @type s :: non_neg_integer()
   @type components :: {v, r, s}
@@ -46,23 +45,18 @@ defmodule TTEth.Type.Signature do
   `TTEth.Wallet.personal_sign/2` should be used instead.
 
   SEE: https://eips.ethereum.org/EIPS/eip-191
+
   SEE: https://ethereum.org/en/developers/docs/apis/json-rpc#eth_sign
   """
-  @deprecated "Use Wallet.personal_sign/2 to sign using a wallet adapter instead."
+  @deprecated "Use Wallet.personal_sign/2 instead."
   @spec sign(message :: binary, private_key :: binary) ::
           {:ok, components} | {:error, :cannot_sign}
-  def sign(message, private_key) do
-    message
-    |> digest()
-    |> Secp256k1.ecdsa_sign_compact(private_key)
-    |> case do
-      {:ok, {<<r::size(256), s::size(256)>>, recovery_id}} ->
-        {:ok, {@base_v + recovery_id, r, s}}
-
-      {:error, _} ->
-        {:error, :cannot_sign}
-    end
-  end
+  def sign(message, private_key),
+    do:
+      message
+      |> digest()
+      |> Secp256k1.ecdsa_sign_compact(private_key)
+      |> compact_to_components()
 
   @spec sign!(binary, binary) :: components
   def sign!(message, private_key) do
@@ -72,19 +66,16 @@ defmodule TTEth.Type.Signature do
 
   @doc """
   Given a hash, signature components and optional chain id, returns the public key.
-
-  Note: The `chain_id` has been dropped and should not be passed if this is for a EIP-191 message.
-  not for EIP-155 transactions.
   """
   @spec recover(binary, components) :: {:ok, binary} | {:error, binary}
-  def recover(hash, {v, r, s}) do
+  def recover(digest, {v, r, s}) do
     sig =
       BitHelper.pad(:binary.encode_unsigned(r), 32) <>
         BitHelper.pad(:binary.encode_unsigned(s), 32)
 
     recovery_id = v - @base_v
 
-    case Secp256k1.ecdsa_recover_compact(hash, sig, recovery_id) do
+    case Secp256k1.ecdsa_recover_compact(digest, sig, recovery_id) do
       {:ok, public_key} -> {:ok, public_key}
       {:error, reason} -> {:error, to_string(reason)}
     end
@@ -96,22 +87,18 @@ defmodule TTEth.Type.Signature do
     pub
   end
 
-  @spec is_signature_valid?(components, chain_id, keyword) :: boolean
-  def is_signature_valid?({v, r, s}, _chain_id, max_s: :secp256k1n),
-    do:
-      (v == 27 || v == 28) and
-        r > 0 and r < @secp256k1n and
-        s > 0 and s < @secp256k1n
+  @doc """
+  Takes the compact signature and returns the components with `v` added.
+  """
+  def compact_to_components({:ok, {<<r::size(256), s::size(256)>>, recovery_id}}),
+    do: {:ok, {@base_v + recovery_id, r, s}}
 
-  def is_signature_valid?({r, s, v}, chain_id, max_s: :secp256k1n_2),
-    do:
-      (v == 27 || v == 28 || v == chain_id * 2 + 35 || v == chain_id * 2 + 36) and
-        r > 0 and r < @secp256k1n and
-        s > 0 and s <= @secp256k1n_2
+  def compact_to_components({:error, _}),
+    do: {:error, :cannot_sign}
 
   @spec components(binary) :: {:error, :invalid_signature} | {:ok, components}
-  def components(sig) do
-    sig
+  def components(signature) do
+    signature
     |> from_human()
     |> case do
       {:ok, <<r::size(256), s::size(256), v::integer>>} -> {:ok, {v, r, s}}
@@ -120,12 +107,13 @@ defmodule TTEth.Type.Signature do
   end
 
   @spec components!(binary) :: components
-  def components!(sig) do
-    {:ok, {_v, _r, _s} = comps} = sig |> components()
+  def components!(signature) do
+    {:ok, {_v, _r, _s} = comps} = signature |> components()
     comps
   end
 
-  def from_components!({v, r, s}),
+  @spec from_components!(components) :: binary()
+  def from_components!({v, r, s} = _components) when v in @valid_vs,
     do: <<r::size(256), s::size(256), v::integer>>
 
   @spec to_human_from_components!(components) :: <<_::16, _::_*8>>
@@ -134,10 +122,4 @@ defmodule TTEth.Type.Signature do
       components
       |> from_components!()
       |> to_human!()
-
-  def to_human_from_components!({<<r::size(256), s::size(256)>>, v} = _components)
-      when is_integer(v),
-      do:
-        {v, r, s}
-        |> to_human_from_components!()
 end

@@ -70,16 +70,16 @@ defmodule TTEth.Wallet do
   @doc """
   Signs a digest using the passed wallet.
   """
-  def sign(%__MODULE__{_adapter: wallet}, "" <> hash_digest),
+  def sign(%__MODULE__{_adapter: wallet}, "" <> digest),
     do:
       wallet
-      |> WalletProtocol.sign(hash_digest)
+      |> WalletProtocol.sign(digest)
 
   @doc """
   Same as `sign/2` but raises if the signing process is not successful.
   """
-  def sign!(%__MODULE__{} = wallet, "" <> hash_digest) do
-    {:ok, ret} = wallet |> sign(hash_digest)
+  def sign!(%__MODULE__{} = wallet, "" <> digest) do
+    {:ok, ret} = wallet |> sign(digest)
     ret
   end
 
@@ -88,13 +88,18 @@ defmodule TTEth.Wallet do
 
   This is for personal signed data, not for transaction data.
 
+  Components of the signature are returned to maintain compatibility with
+  `TTEth.Type.Signature.sign/2`.
+
   SEE: https://eips.ethereum.org/EIPS/eip-191
+
   SEE: https://ethereum.org/en/developers/docs/apis/json-rpc#eth_sign
   """
   def personal_sign(%__MODULE__{} = wallet, "" <> plaintext),
     do:
       wallet
       |> sign(plaintext |> EthSignature.digest())
+      |> EthSignature.compact_to_components()
 
   @doc """
   Same as `personal_sign/2` but raises if the signing process is not successful.
