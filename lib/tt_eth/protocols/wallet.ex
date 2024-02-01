@@ -3,6 +3,9 @@ defprotocol TTEth.Protocols.Wallet do
   Protocol for wallet adapters.
   """
 
+  @typedoc """
+  All the types that implement this protocol.
+  """
   @type t :: any()
 
   @doc """
@@ -13,5 +16,6 @@ defprotocol TTEth.Protocols.Wallet do
   @doc """
   Returns a signature.
   """
-  def sign(t, hash_digest)
+  @spec sign(t, binary()) :: binary()
+  def sign(t, digest)
 end

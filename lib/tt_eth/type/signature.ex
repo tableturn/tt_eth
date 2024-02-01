@@ -49,8 +49,7 @@ defmodule TTEth.Type.Signature do
   SEE: https://ethereum.org/en/developers/docs/apis/json-rpc#eth_sign
   """
   @deprecated "Use Wallet.personal_sign/2 instead."
-  @spec sign(message :: binary, private_key :: binary) ::
-          {:ok, components} | {:error, :cannot_sign}
+  @spec sign(message :: binary, private_key :: binary) :: Secp256k1.compact_signature_return()
   def sign(message, private_key),
     do:
       message
@@ -90,13 +89,16 @@ defmodule TTEth.Type.Signature do
   @doc """
   Takes the compact signature and returns the components with `v` added.
   """
+  @spec compact_to_components(Secp256k1.compact_signature_return()) ::
+          {:ok, components} | {:error, :cannot_sign}
+
   def compact_to_components({:ok, {<<r::size(256), s::size(256)>>, recovery_id}}),
     do: {:ok, {@base_v + recovery_id, r, s}}
 
   def compact_to_components({:error, _}),
     do: {:error, :cannot_sign}
 
-  @spec components(binary) :: {:error, :invalid_signature} | {:ok, components}
+  @spec components(binary) :: {:ok, components} | {:error, :invalid_signature}
   def components(signature) do
     signature
     |> from_human()
