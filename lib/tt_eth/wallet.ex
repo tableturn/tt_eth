@@ -4,11 +4,24 @@ defmodule TTEth.Wallet do
   """
   alias TTEth.Protocols.Wallet, as: WalletProtocol
   alias TTEth.Type.Signature, as: EthSignature
+  alias TTEth.Type.Address, as: EthAddress
+  alias TTEth.Type.PublicKey, as: EthPublicKey
 
-  @type t :: %__MODULE__{}
+  @typedoc """
+  Represents a Wallet.
 
+  The underlying adapter lives under `_adapter`.
+  """
+  @type t :: %__MODULE__{
+          address: EthAddress.t(),
+          public_key: EthPublicKey.t(),
+          human_address: String.t(),
+          human_public_key: String.t(),
+          _adapter: struct()
+        }
+
+  @enforce_keys [:address, :public_key, :human_address, :human_public_key, :_adapter]
   defstruct [
-    :adapter,
     :address,
     :public_key,
     :human_address,
@@ -63,7 +76,7 @@ defmodule TTEth.Wallet do
       |> WalletProtocol.sign(hash_digest)
 
   @doc """
-  The same as `sign/2` but raises if the signing process is not successful.
+  Same as `sign/2` but raises if the signing process is not successful.
   """
   def sign!(%__MODULE__{} = wallet, "" <> hash_digest) do
     {:ok, ret} = wallet |> sign(hash_digest)
@@ -84,7 +97,7 @@ defmodule TTEth.Wallet do
       |> sign(plaintext |> EthSignature.digest())
 
   @doc """
-  The same as `personal_sign/2` but raises if the signing process is not successful.
+  Same as `personal_sign/2` but raises if the signing process is not successful.
   """
   def personal_sign!(%__MODULE__{} = wallet, "" <> plaintext) do
     {:ok, comps} = wallet |> personal_sign(plaintext)

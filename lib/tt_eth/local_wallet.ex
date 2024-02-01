@@ -35,7 +35,6 @@ defmodule TTEth.LocalWallet do
       address = pub |> Address.from_public_key!()
 
       [
-        adapter: @for,
         address: address,
         public_key: pub,
         human_address: address |> Address.to_human!(),
