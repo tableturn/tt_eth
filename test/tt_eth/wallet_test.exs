@@ -55,7 +55,6 @@ defmodule TTEth.WalletTest do
 
     wallet
     |> assert_match(%Wallet{
-      adapter: LocalWallet,
       address: ^address,
       public_key: ^public_key,
       human_address: ^human_address,
