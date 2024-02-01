@@ -5,7 +5,7 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
   alias TTEth.Wallet
 
   # Polygon Mumbai.
-  @chain_id 80001
+  @chain_id 80_001
 
   @private_key_human "0x62aa6ec41b56439d2c5df352c45a00389cef262b3761e13c6481e35ab027d262"
   @to_address_human "0x38f153fdd399ff2cf64704c6a4b16d3fd9ddcd69"
@@ -113,7 +113,7 @@ defmodule TTEth.Transactions.EIP1559TransactionTest do
         data: @tx_data,
         chain_id: @chain_id,
         nonce: @nonce,
-        gas_limit: 21000,
+        gas_limit: 21_000,
         max_fee_per_gas: 3_000_000_000,
         max_priority_fee_per_gas: 3_000_000_001,
         value: 0
