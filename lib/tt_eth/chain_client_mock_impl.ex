@@ -52,6 +52,41 @@ defmodule TTEth.ChainClientMockImpl do
     do: {:ok, "0x5208"}
 
   @impl ChainClient
+  def eth_fee_history(_block_count, _newest_block, _reward_percentiles, _opts \\ []),
+    do:
+      {:ok,
+       [
+         %{
+           "oldestBlock" => "0x54",
+           "reward" => [
+             [
+               "0x174876e800",
+               "0x174876e800"
+             ],
+             [
+               "0x174876e800",
+               "0x174876e800"
+             ],
+             [
+               "0x174876e800",
+               "0x174876e800"
+             ]
+           ],
+           "baseFeePerGas" => [
+             "0x0",
+             "0x0",
+             "0x0",
+             "0x0"
+           ],
+           "gasUsedRatio" => [
+             0.0010253063265735019,
+             0.006479788956353575,
+             0.00006763590977418037
+           ]
+         }
+       ]}
+
+  @impl ChainClient
   def eth_get_block_by_number(_block, _tx_detail \\ false),
     do: {:ok, %{"number" => "0x1", "baseFeePerGas" => "0x10"}}
 end

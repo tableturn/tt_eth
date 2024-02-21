@@ -16,6 +16,7 @@ defmodule TTEth.Behaviours.ChainClient do
   @type filter_params :: map
   @type filter_id :: String.t()
   @type tx_obj :: map()
+  @type error :: {:error, map() | binary() | atom()}
 
   @callback eth_call(contract :: address, encoded_args) :: any
   @callback eth_call(contract :: address, encoded_args, opts) :: any
@@ -26,8 +27,13 @@ defmodule TTEth.Behaviours.ChainClient do
   @callback build_tx_data(address, abi_data, wallet, nonce) :: tx_data
   @callback build_tx_data(address, abi_data, wallet, nonce, keyword) :: tx_data
 
-  @callback eth_get_transaction_count(account :: address, block_id) :: any
-  @callback eth_get_transaction_count(account :: address, block_id, opts) :: any
+  @callback eth_get_balance(account :: address, block_id) :: {:ok, binary()} | error
+  @callback eth_get_balance(account :: address, block_id, opts) :: {:ok, binary()} | error
+
+  @callback eth_get_transaction_count(account :: address, block_id) ::
+              {:ok, binary()} | error
+  @callback eth_get_transaction_count(account :: address, block_id, opts) ::
+              {:ok, binary()} | error
 
   @callback eth_get_logs(filter_params) :: {:ok, any} | {:error, any}
   @callback eth_get_logs(filter_params, opts) :: {:ok, any} | {:error, any}
@@ -46,6 +52,20 @@ defmodule TTEth.Behaviours.ChainClient do
 
   @callback eth_estimate_gas(tx_obj) :: any
   @callback eth_estimate_gas(tx_obj, opts) :: any
+
+  @callback eth_fee_history(
+              block_count :: integer(),
+              newest_block :: binary(),
+              reward_percentiles :: list(binary())
+            ) ::
+              {:ok, map()} | error
+  @callback eth_fee_history(
+              block_count :: integer(),
+              newest_block :: binary(),
+              reward_percentiles :: list(binary()),
+              opts
+            ) ::
+              {:ok, map()} | error
 
   @callback eth_get_block_by_number(block_id) :: any
   @callback eth_get_block_by_number(block_id, boolean) :: any
