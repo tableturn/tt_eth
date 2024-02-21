@@ -35,6 +35,10 @@ defmodule TTEth.ChainClient do
         |> hex_prefix!()
 
   @impl ChainClient
+  def eth_get_balance(address, block \\ "latest", opts \\ []),
+    do: address |> HttpClient.eth_get_balance(block, opts)
+
+  @impl ChainClient
   def eth_get_transaction_count(address, block \\ "latest", opts \\ []),
     do: address |> HttpClient.eth_get_transaction_count(block, opts)
 
