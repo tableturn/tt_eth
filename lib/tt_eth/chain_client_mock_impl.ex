@@ -20,6 +20,10 @@ defmodule TTEth.ChainClientMockImpl do
     do: to |> TTEth.ChainClient.build_tx_data(abi_data, wallet, nonce, opts)
 
   @impl ChainClient
+  def eth_get_balance(_address, _block \\ "latest", _opts \\ []),
+    do: {:ok, "0x7"}
+
+  @impl ChainClient
   def eth_get_transaction_count(_address, _block \\ "latest", _opts \\ []),
     do: {:ok, "0x42"}
 
