@@ -67,6 +67,10 @@ defmodule TTEth.ChainClient do
     do: tx_obj |> HttpClient.eth_estimate_gas(opts)
 
   @impl ChainClient
+  def eth_fee_history(block_count, newest_block, reward_percentiles, opts \\ []),
+    do: HttpClient.eth_fee_history(block_count, newest_block, reward_percentiles, opts)
+
+  @impl ChainClient
   def eth_get_block_by_number("" <> block, tx_detail \\ false),
     do: block |> HttpClient.eth_get_block_by_number(tx_detail)
 
