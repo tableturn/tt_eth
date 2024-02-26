@@ -69,4 +69,7 @@ defmodule TTEth.Behaviours.ChainClient do
 
   @callback eth_get_block_by_number(block_id) :: any
   @callback eth_get_block_by_number(block_id, boolean) :: any
+
+  @callback eth_get_code(address, block :: binary(), opts) :: {:ok, any} | {:error, any}
+  @callback eth_get_code(address, block :: binary()) :: {:ok, any} | {:error, any}
 end
