@@ -74,6 +74,10 @@ defmodule TTEth.ChainClient do
   def eth_get_block_by_number("" <> block, tx_detail \\ false),
     do: block |> HttpClient.eth_get_block_by_number(tx_detail)
 
+  @impl ChainClient
+  def eth_get_code("" <> address, block \\ "latest", opts \\ []),
+    do: address |> HttpClient.eth_get_code(block, opts)
+
   ## Helpers outside of the ChainClient behaviour.
 
   def eth_get_transaction_receipt("" <> tx_hash, opts \\ []),
