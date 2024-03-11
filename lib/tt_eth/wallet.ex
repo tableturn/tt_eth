@@ -2,7 +2,6 @@ defmodule TTEth.Wallet do
   @moduledoc """
   Provides a handle struct - `TTEth.Wallet.t()` for encapsulating a wallet.
   """
-  alias TTEth.Protocols.Wallet, as: WalletProtocol
   alias TTEth.Type.Signature, as: EthSignature
   alias TTEth.Type.Address, as: EthAddress
   alias TTEth.Type.PublicKey, as: EthPublicKey
@@ -59,21 +58,22 @@ defmodule TTEth.Wallet do
   @doc """
   Creates a new wallet from an underlying wallet or a random one.
   """
-  def new(wallet \\ TTEth.LocalWallet.generate()) when is_struct(wallet),
-    do:
-      __MODULE__
-      |> struct!(
-        wallet
-        |> WalletProtocol.wallet_attrs()
-      )
+  def new(%wallet_adapter{} = wallet \\ TTEth.LocalWallet.generate())
+      when is_struct(wallet),
+      do:
+        __MODULE__
+        |> struct!(
+          wallet
+          |> wallet_adapter.wallet_attrs()
+        )
 
   @doc """
   Signs a digest using the passed wallet.
   """
-  def sign(%__MODULE__{_adapter: wallet}, "" <> digest),
+  def sign(%__MODULE__{_adapter: %wallet_adapter{} = wallet_adapter_state}, "" <> digest),
     do:
-      wallet
-      |> WalletProtocol.sign(digest)
+      wallet_adapter_state
+      |> wallet_adapter.sign(digest)
 
   @doc """
   Same as `sign/2` but raises if the signing process is not successful.
@@ -111,9 +111,9 @@ defmodule TTEth.Wallet do
 
   ## Private.
 
-  defp build_with_adapter!(config, adapter \\ TTEth.LocalWallet)
-       when (is_binary(config) or is_map(config)) and is_atom(adapter),
+  defp build_with_adapter!(config, wallet_adapter \\ TTEth.LocalWallet)
+       when (is_binary(config) or is_map(config)) and is_atom(wallet_adapter),
        do:
          config
-         |> adapter.new()
+         |> wallet_adapter.new()
 end
