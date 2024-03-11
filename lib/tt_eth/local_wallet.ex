@@ -14,44 +14,19 @@ defmodule TTEth.LocalWallet do
   """
   alias TTEth.Type.{Address, PublicKey, PrivateKey}
   alias TTEth.Secp256k1
-  alias TTEth.Behaviours.Wallet, as: WalletBehaviour
+  alias TTEth.Behaviours.WalletAdapter, as: WalletAdapterBehaviour
 
   @type t :: %__MODULE__{}
 
-  @behaviour WalletBehaviour
+  @behaviour WalletAdapterBehaviour
 
   defstruct [
     :private_key,
     :human_private_key
   ]
 
-  defimpl TTEth.Protocols.Wallet, for: __MODULE__ do
-    def wallet_attrs(%@for{} = wallet) do
-      pub =
-        wallet.private_key
-        |> PublicKey.from_private_key!()
-        |> PublicKey.from_human!()
-
-      address = pub |> Address.from_public_key!()
-
-      [
-        address: address,
-        public_key: pub,
-        human_address: address |> Address.to_human!(),
-        human_public_key: pub |> PublicKey.to_human!(),
-        _adapter: wallet
-      ]
-    end
-
-    def sign(%@for{} = wallet, "" <> digest),
-      do:
-        digest
-        |> Secp256k1.ecdsa_sign_compact(wallet.private_key)
-  end
-
-  @impl WalletBehaviour
-
-  def new(%{private_key: private_key} = _config),
+  @impl WalletAdapterBehaviour
+  def new(%{private_key: "" <> private_key} = _config),
     do:
       __MODULE__
       |> struct!(%{
@@ -59,10 +34,35 @@ defmodule TTEth.LocalWallet do
         human_private_key: private_key
       })
 
+  @impl WalletAdapterBehaviour
   def new("" <> private_key = _config),
     do:
       %{private_key: private_key}
       |> new()
+
+  @impl WalletAdapterBehaviour
+  def wallet_attrs(%__MODULE__{} = wallet) do
+    pub =
+      wallet.private_key
+      |> PublicKey.from_private_key!()
+      |> PublicKey.from_human!()
+
+    address = pub |> Address.from_public_key!()
+
+    %{
+      address: address,
+      public_key: pub,
+      human_address: address |> Address.to_human!(),
+      human_public_key: pub |> PublicKey.to_human!(),
+      _adapter: wallet
+    }
+  end
+
+  @impl WalletAdapterBehaviour
+  def sign(%__MODULE__{} = wallet, "" <> digest),
+    do:
+      digest
+      |> Secp256k1.ecdsa_sign_compact(wallet.private_key)
 
   ## Helpers.
 

@@ -47,10 +47,7 @@ defmodule TTEth.MixProject do
       Behaviours: [
         TTEth.Behaviours.ChainClient,
         TTEth.Behaviours.Transaction,
-        TTEth.Behaviours.Wallet
-      ],
-      Protocols: [
-        TTEth.Protocols.Wallet
+        TTEth.Behaviours.WalletAdapter
       ],
       Types: [
         TTEth.Type.Address,
