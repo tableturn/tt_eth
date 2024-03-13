@@ -55,14 +55,14 @@ defmodule TTEth.Behaviours.ChainClient do
 
   @callback eth_fee_history(
               block_count :: integer(),
-              newest_block :: binary(),
-              reward_percentiles :: list(binary())
+              newest_block :: binary() | integer(),
+              reward_percentiles :: list(non_neg_integer())
             ) ::
               {:ok, map()} | error
   @callback eth_fee_history(
               block_count :: integer(),
-              newest_block :: binary(),
-              reward_percentiles :: list(binary()),
+              newest_block :: binary() | integer(),
+              reward_percentiles :: list(non_neg_integer()),
               opts
             ) ::
               {:ok, map()} | error
