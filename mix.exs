@@ -1,10 +1,12 @@
 defmodule TTEth.MixProject do
   use Mix.Project
 
+  @version "0.2.0"
+
   def project(),
     do: [
       app: :tt_eth,
-      version: "0.1.0",
+      version: @version,
       description: "Ethereum primitives for Elixir.",
       elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
