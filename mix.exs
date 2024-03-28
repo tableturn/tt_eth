@@ -8,7 +8,7 @@ defmodule TTEth.MixProject do
       app: :tt_eth,
       version: @version,
       description: "Ethereum primitives for Elixir.",
-      elixir: "~> 1.11",
+      elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       # Docs
