@@ -9,15 +9,16 @@ jobs:
     runs-on: "ubuntu-20.04"
     strategy:
       matrix:
-        otp: ["22.x", "24.x", "25.x"]
-        elixir: ["1.11.4", "1.13.4", "1.14.5"]
-        exclude:
-          - otp: "25.x"
-            elixir: "1.11.4"
-          - otp: "22.x"
-            elixir: "1.14.5"
-          - otp: "24.x"
-            elixir: "1.14.5"
+        include:
+          - pair:
+              elixir: "1.13.4"
+              otp: "24.x"
+          - pair:
+              elixir: "1.14.5"
+              otp: "25.x"
+          - pair:
+              elixir: "1.15.7"
+              otp: "26.x"
 
     steps:
       - name: "Checkout"
@@ -26,8 +27,8 @@ jobs:
       - name: "Setup Elixir / Erlang"
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
+          otp-version: ${{matrix.pair.otp}}
+          elixir-version: ${{matrix.pair.elixir}}
 
       - name: "Get the deps"
         run: mix deps.get
