@@ -6,7 +6,7 @@ defmodule TTEth.BitHelper do
 
   SEE: https://github.com/mana-ethereum/mana/blob/master/apps/blockchain/lib/bit_helper.ex
   """
-  use Bitwise
+  import Bitwise
 
   @doc """
   Simply returns the rightmost n bits of a binary.
