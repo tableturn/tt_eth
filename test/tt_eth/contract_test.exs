@@ -53,12 +53,16 @@ defmodule TTEth.ContractTest do
       |> TestToken.event_selector()
       |> assert_equal(%ABI.FunctionSelector{
         function: "Transfer",
-        input_names: ["from", "to", "value"],
-        inputs_indexed: [true, true, false],
-        method_id: <<221, 242, 82, 173>>,
-        returns: [],
+        method_id:
+          <<221, 242, 82, 173, 27, 226, 200, 155, 105, 194, 176, 104, 252, 55, 141, 170, 149, 43,
+            167, 241, 99, 196, 161, 22, 40, 245, 90, 77, 245, 35, 179, 239>>,
         type: :event,
-        types: [:address, :address, {:uint, 256}]
+        inputs_indexed: [true, true, false],
+        state_mutability: nil,
+        input_names: ["from", "to", "value"],
+        types: [:address, :address, {:uint, 256}],
+        returns: [],
+        return_names: []
       })
     end
   end
