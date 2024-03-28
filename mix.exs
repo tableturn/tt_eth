@@ -28,16 +28,16 @@ defmodule TTEth.MixProject do
 
   defp deps(),
     do: [
-      {:ex_doc, "~> 0.27", only: :dev, runtime: false},
-      {:faker, "~> 0.13", only: [:dev, :test]},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:faker, "~> 0.18", only: [:dev, :test]},
       {:hammox, "~> 0.7.0", only: [:test]},
-      {:ecto, "~> 3.5"},
-      {:ex_secp256k1, "~> 0.5"},
+      {:ecto, "~> 3.11"},
+      {:ex_secp256k1, "~> 0.7.2"},
       {:eip_55, "~> 0.1"},
-      {:ethereumex, "~> 0.10.0"},
-      {:ex_keccak, "~> 0.2"},
-      {:ex_abi, "~> 0.5"},
-      {:ex_rlp, "~> 0.5.3"}
+      {:ethereumex, "~> 0.10.6"},
+      {:ex_keccak, "~> 0.7"},
+      {:ex_abi, "~> 0.7"},
+      {:ex_rlp, "~> 0.6.0"}
     ]
 
   defp groups_for_modules(),
